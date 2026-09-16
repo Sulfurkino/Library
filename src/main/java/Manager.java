@@ -21,69 +21,35 @@ public class Manager {
 
         Book newBook = new Book(bookName, bookId, publishYear);
 
-        library.getBooks().put(bookId, newBook);
+        library.addBook(newBook);
     }
 
     public void removeBook(Book bookToRemove) {
-        library.getBooks().remove(bookToRemove.getId());
+        library.removeBook(bookToRemove);
     }
 
-    public Book findBookById(int bookId) {
-        if (library.getBooks().containsKey(bookId)) {
-            return library.getBooks().get(bookId);
-        }
-        return null;
+    public Book getBookById(int bookId) {
+        return library.getBookById(bookId);
     }
 
-    public Book findBookByName(String bookName) {
-        for (Map.Entry<Integer, Book> books : library.getBooks().entrySet()) {
-            if (Objects.equals(books.getValue().getBookName(), bookName)) {
-                return books.getValue();
-            }
-        }
-        return null;
+    public Book getBookByName(String bookName) {
+        return library.getBookByName(bookName);
     }
 
     public void returnBook(int bookId) {
-        Book book = findBookById(bookId);
-
-        if (book == null || book.isAvailable()) {
-            return;
-        }
-
-        book.setAvailable(true);
+       library.returnBook(bookId);
     }
 
     public void borrowBook(int bookId) {
-        Book book = findBookById(bookId);
-
-        if (book == null) {
-            return;
-        }
-
-        if (!book.isAvailable()) {
-            return;
-        }
-
-        book.setAvailable(false);
+        library.borrowBook(bookId);
     }
 
     public List<Book> getAvailableBooks() {
-        List<Book> result = new ArrayList<>();
-        for (Map.Entry<Integer, Book> books : library.getBooks().entrySet()) {
-            if (books.getValue().isAvailable()) {
-                result.add(books.getValue());
-            }
-        }
-        return result;
+        return library.getAvailableBooks();
     }
 
     public List<Book> getAllBooks() {
-        List<Book> result = new ArrayList<>();
-        for (Map.Entry<Integer, Book> books : library.getBooks().entrySet()) {
-            result.add(books.getValue());
-        }
-        return result;
+        return library.getAllBooks();
     }
 
 
