@@ -30,26 +30,30 @@ public class Library {
         return null;
     }
 
-    public void returnBook(int bookId) {
+    public void returnBook(int bookId, int readerId) {
         Book book = getBookById(bookId);
 
         if (book == null || book.isAvailable()) {
             return;
         }
 
+        if (!readers.get(readerId).getBooks().contains(book)){
+            return;
+        }
+
+        readers.get(readerId).getBooks().remove(book);
+
         book.setAvailable(true);
     }
 
-    public void borrowBook(int bookId) {
+    public void borrowBook(int bookId, int readerId) {
         Book book = getBookById(bookId);
 
-        if (book == null) {
+        if (book == null || !book.isAvailable()) {
             return;
         }
 
-        if (!book.isAvailable()) {
-            return;
-        }
+        readers.get(readerId).getBooks().add(book);
 
         book.setAvailable(false);
     }
@@ -59,6 +63,16 @@ public class Library {
         for (Book book : books.values()) {
             if (book.isAvailable()) {
                 result.add(book);
+            }
+        }
+        return result;
+    }
+
+    public List<Integer> getAvailableBooksId() {
+        List<Integer> result = new ArrayList<>();
+        for (Book book : books.values()) {
+            if (book.isAvailable()) {
+                result.add(book.getId());
             }
         }
         return result;
