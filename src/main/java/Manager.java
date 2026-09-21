@@ -1,4 +1,8 @@
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 
 public class Manager {
 
@@ -50,13 +54,28 @@ public class Manager {
         return library.getAvailableBooksId();
     }
 
+    public List<Book> getBorrowedBooks() {
+        return library.getBorrowedBooks();
+    }
+
     public List<Book> getAllBooks() {
         return library.getAllBooks();
     }
 
+    public Reader getReaderById(int readerId) {
+        return library.getReaderById(readerId);
+    }
+
+    public List<Reader> getAllReaders() {
+        return library.getAllReaders();
+    }
+
+    public void addBooks(List<Book> books) {
+        library.addBooks(books);
+    }
 
     //выдача нескольких книг читателю
-    public void giveSeveralBooks(int readerId,List<Integer> booksId){
+    public OperationResult giveSeveralBooks(int readerId, List<Integer> booksId) {
         if (booksId == null || booksId.isEmpty()) {
             throw new IllegalArgumentException("-Список книжек не должен быть пустым");
         }
@@ -121,8 +140,8 @@ public class Manager {
 
         //случай успеха
         if (isSuccessful){
-            for (Integer integer : booksId) {
-                library.borrowBook(integer, readerId);
+            for (Integer readersId : booksId) {
+                library.borrowBook(readersId, readerId);
             }
             resultMessage += "-Книги успешно выданы, приятного чтения\n";
         } else {
@@ -130,9 +149,41 @@ public class Manager {
         }
 
         //перечисление признаков успеха и причин отказа-
-        System.out.println(resultMessage);
+
+        return new OperationResult(isSuccessful, resultMessage);
 
     }
 
+    //Статистика выданных книг
+    public Map<Integer, Map<String, Long>> getBorrowedStats() {
+        Map<Integer, Map<String, Long>> result = library.getReaders().values().stream()
+                .flatMap(reader -> reader.getBooks().stream())
+                .collect(groupingBy(book -> ((book.getPublishYear() / 10) * 10),
+                        TreeMap::new, groupingBy(Book::getBookName, TreeMap::new, counting())));
 
+        return result;
+    }
+
+    public List<LibraryProblem> validateLibrary() {
+        List<LibraryProblem> result = new ArrayList<>();
+
+        //
+        List<Book> borrowedBooks = library.getBorrowedBooks();
+        boolean hasDuplicates = borrowedBooks.size() != new HashSet<>(borrowedBooks).size();
+        if (hasDuplicates) {
+            Set<Integer> dupBookIds = borrowedBooks.stream()
+                    .filter(n -> Collections.frequency(borrowedBooks, n) > 1)
+                    .map(Book::getId)
+                    .collect(Collectors.toSet());
+
+            List<Integer> dupReaderIds = getAllReaders().stream()
+                    .filter(reader -> reader.getBooks().stream()
+                            .anyMatch(book -> dupBookIds.contains(book.getId())))
+                    .map(Reader::getId)
+                    .collect(Collectors.toList());
+            result.add(new LibraryProblem("Найдены дубли в списках выдачи", dupBookIds, dupReaderIds));
+        }
+
+        return result;
+    }
 }

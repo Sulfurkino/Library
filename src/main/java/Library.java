@@ -29,39 +29,59 @@ public class Library {
         }
         return null;
     }
-
+    //защита от null
     public void returnBook(int bookId, int readerId) {
         Book book = getBookById(bookId);
+        Reader reader = getReaderById(readerId);
 
-        if (book == null || book.isAvailable()) {
+        if (book == null || book.isAvailable() || reader == null) {
             return;
         }
 
-        if (!readers.get(readerId).getBooks().contains(book)){
+        if (!reader.getBooks().contains(book)) {
             return;
         }
 
-        readers.get(readerId).getBooks().remove(book);
-
+        reader.getBooks().remove(book);
         book.setAvailable(true);
     }
-
+    //защита от null
     public void borrowBook(int bookId, int readerId) {
         Book book = getBookById(bookId);
+        Reader reader = getReaderById(readerId);
 
-        if (book == null || !book.isAvailable()) {
+        if (book == null || !book.isAvailable() || reader == null) {
             return;
         }
 
-        readers.get(readerId).getBooks().add(book);
-
+        reader.getBooks().add(book);
         book.setAvailable(false);
+    }
+
+    public void addBooks(List<Book> books) {
+        for (Book book : books) {
+            addBook(book);
+        }
     }
 
     public List<Book> getAvailableBooks() {
         List<Book> result = new ArrayList<>();
         for (Book book : books.values()) {
             if (book.isAvailable()) {
+                result.add(book);
+            }
+        }
+        return result;
+    }
+
+    public Reader getReaderById(int readerId) {
+        return readers.get(readerId);
+    }
+
+    public List<Book> getBorrowedBooks() {
+        List<Book> result = new ArrayList<>();
+        for (Book book : books.values()) {
+            if (!book.isAvailable()) {
                 result.add(book);
             }
         }
@@ -82,5 +102,8 @@ public class Library {
         return new ArrayList<>(books.values());
     }
 
+    public List<Reader> getAllReaders() {
+        return new ArrayList<>(readers.values());
+    }
 }
 
