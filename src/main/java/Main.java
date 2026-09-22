@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 //надеюсь ничего страшного, что я заставил чат gpt делать тесты
 public class Main {
@@ -9,93 +10,171 @@ public class Main {
 
         Manager manager = new Manager(library);
 
-        // Добавляем книги
-        manager.addBook("Java для начинающих", 2020); // id 0
-        manager.addBook("Effective Java", 2018);      // id 1
-        manager.addBook("Clean Code", 2008);           // id 2
-        manager.addBook("Head First Java", 2019);      // id 3
-        manager.addBook("Spring in Action", 2022);     // id 4
-        manager.addBook("Java Concurrency", 2021);     // id 5
-        manager.addBook("Design Patterns", 1994);      // id 6
+        //Проверка 3го задания -
+
+        // =========================
+        // КНИГИ В КАТАЛОГЕ
+        // =========================
+
+        Book book1 = new Book("Война и мир", 1, 1869);
+        Book book2 = new Book("Преступление и наказание", 2, 1866);
+        Book book3 = new Book("Мастер и Маргарита", 3, 1967);
+        Book book4 = new Book("Герой нашего времени", 4, 1840);
+
+        library.addBook(book1);
+        library.addBook(book2);
+        library.addBook(book3);
+        library.addBook(book4);
 
 
-        Reader reader1 = new Reader(
-                new ArrayList<>(),
-                1,
-                "Анна"
-        );
+        // =========================
+        // ЧИТАТЕЛИ
+        // =========================
 
-        Reader reader2 = new Reader(
-                new ArrayList<>(),
-                2,
-                "Иван"
-        );
+        Reader reader1 = new Reader(new ArrayList<>(), 101, "Иван");
+        Reader reader2 = new Reader(new ArrayList<>(), 102, "Петр");
+        Reader reader3 = new Reader(new ArrayList<>(), 103, "Анна");
 
-        // Добавляем читателей в библиотеку
         library.getReaders().put(reader1.getId(), reader1);
         library.getReaders().put(reader2.getId(), reader2);
 
 
-        // ==========================
-        // ПРОВЕРКА giveSeveralBooks
-        // ==========================
+        // =========================
+        // НАМЕРЕННО ЛОМАЕМ ДАННЫЕ
+        // =========================
 
-        // 1. Успешная выдача двух книг Анне
-        System.out.println("=== Тест 1 ===");
-        manager.giveSeveralBooks(
-                1,
-                Arrays.asList(0, 1)
-        );
 
-        // 2. Попытка выдать несуществующую книгу
-        System.out.println("\n=== Тест 2 ===");
-        manager.giveSeveralBooks(
-                1,
-                Arrays.asList(2, 999)
-        );
+        // 1. КНИГА У ЧИТАТЕЛЯ, НО ПОМЕЧЕНА КАК ДОСТУПНАЯ
+        //
+        // book1 остаётся available == true,
+        // но мы вручную кладём её читателю.
+        reader1.getBooks().add(book1);
 
-        // 3. Попытка выдать уже занятую книгу
-        System.out.println("\n=== Тест 3 ===");
-        manager.giveSeveralBooks(
-                2,
-                Arrays.asList(0, 3)
-        );
 
-        // 4. Дубликат ID
-        System.out.println("\n=== Тест 4 ===");
-        manager.giveSeveralBooks(
-                2,
-                Arrays.asList(2, 2, 3)
-        );
+        // 2. ОДНА КНИГА ВЫДАНА ДВУМ ЧИТАТЕЛЯМ
+        //
+        // book2 будет у reader1 и reader2.
+        // Это нарушение целостности.
+        book2.setAvailable(false);
 
-        // 5. Несуществующий читатель
-        System.out.println("\n=== Тест 5 ===");
-        manager.giveSeveralBooks(
-                999,
-                Arrays.asList(4, 5)
-        );
+        reader1.getBooks().add(book2);
+        reader2.getBooks().add(book2);
 
-        // 6. Выдать несколько книг Ивану
-        System.out.println("\n=== Тест 6 ===");
-        manager.giveSeveralBooks(
-                2,
-                Arrays.asList(4, 5, 6)
-        );
 
-        // 7. Проверяем состояние библиотеки
-        System.out.println("\n=== Состояние ===");
+        // 3. КНИГА НЕДОСТУПНА, НО НИ У КОГО ЕЁ НЕТ
+        //
+        // book3 помечаем как недоступную,
+        // но ни одному читателю её не добавляем.
+        book3.setAvailable(false);
 
-        System.out.println("Книги Анны: " +
-                reader1.getBooks());
 
-        System.out.println("Книги Ивана: " +
-                reader2.getBooks());
+        // 4. У ЧИТАТЕЛЯ ЕСТЬ КНИГА, КОТОРОЙ НЕТ В КАТАЛОГЕ
+        //
+        // Cоздаем книгу, но НЕ добавляем её в library.books.
+        Book ghostBook = new Book("Несуществующая книга", 999, 2025);
 
-        System.out.println("Свободные книги: " +
-                manager.getAvailableBooks());
+        reader2.getBooks().add(ghostBook);
 
-        System.out.println("Все книги: " +
-                manager.getAllBooks());
-    }
 
-}
+        // =========================
+        // ПРОВЕРЯЕМ
+        // =========================
+
+        List<LibraryProblem> problems = manager.validateLibrary();
+
+        System.out.println("Количество найденных проблем: " + problems.size());
+
+        for (LibraryProblem problem : problems) {
+            System.out.println(problem);
+        }
+
+//        // Добавляем книги
+//        manager.addBook("Java для начинающих", 2020); // id 0
+//        manager.addBook("Effective Java", 2018);      // id 1
+//        manager.addBook("Clean Code", 2008);           // id 2
+//        manager.addBook("Head First Java", 2019);      // id 3
+//        manager.addBook("Spring in Action", 2022);     // id 4
+//        manager.addBook("Java Concurrency", 2021);     // id 5
+//        manager.addBook("Design Patterns", 1994);      // id 6
+
+
+//        Reader reader1 = new Reader(
+//                new ArrayList<>(),
+//                1,
+//                "Анна"
+//        );
+//
+//        Reader reader2 = new Reader(
+//                new ArrayList<>(),
+//                2,
+//                "Иван"
+//        );
+//
+//        // Добавляем читателей в библиотеку
+//        library.getReaders().put(reader1.getId(), reader1);
+//        library.getReaders().put(reader2.getId(), reader2);
+//
+//
+//        // ==========================
+//        // ПРОВЕРКА giveSeveralBooks
+//        // ==========================
+//
+//        // 1. Успешная выдача двух книг Анне
+//        System.out.println("=== Тест 1 ===");
+//        manager.giveSeveralBooks(
+//                1,
+//                Arrays.asList(0, 1)
+//        );
+//
+//        // 2. Попытка выдать несуществующую книгу
+//        System.out.println("\n=== Тест 2 ===");
+//        manager.giveSeveralBooks(
+//                1,
+//                Arrays.asList(2, 999)
+//        );
+//
+//        // 3. Попытка выдать уже занятую книгу
+//        System.out.println("\n=== Тест 3 ===");
+//        manager.giveSeveralBooks(
+//                2,
+//                Arrays.asList(0, 3)
+//        );
+//
+//        // 4. Дубликат ID
+//        System.out.println("\n=== Тест 4 ===");
+//        manager.giveSeveralBooks(
+//                2,
+//                Arrays.asList(2, 2, 3)
+//        );
+//
+//        // 5. Несуществующий читатель
+//        System.out.println("\n=== Тест 5 ===");
+//        manager.giveSeveralBooks(
+//                999,
+//                Arrays.asList(4, 5)
+//        );
+//
+//        // 6. Выдать несколько книг Ивану
+//        System.out.println("\n=== Тест 6 ===");
+//        manager.giveSeveralBooks(
+//                2,
+//                Arrays.asList(4, 5, 6)
+//        );
+//
+//        // 7. Проверяем состояние библиотеки
+//        System.out.println("\n=== Состояние ===");
+//
+//        System.out.println("Книги Анны: " +
+//                reader1.getBooks());
+//
+//        System.out.println("Книги Ивана: " +
+//                reader2.getBooks());
+//
+//        System.out.println("Свободные книги: " +
+//                manager.getAvailableBooks());
+//
+//        System.out.println("Все книги: " +
+//                manager.getAllBooks());
+//    }
+
+}}

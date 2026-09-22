@@ -54,6 +54,8 @@ public class Manager {
         return library.getAvailableBooksId();
     }
 
+    public List<Integer> getBorrowedBooksId(){return library.getBorrowedBooksId();}
+
     public List<Book> getBorrowedBooks() {
         return library.getBorrowedBooks();
     }
@@ -167,23 +169,77 @@ public class Manager {
     public List<LibraryProblem> validateLibrary() {
         List<LibraryProblem> result = new ArrayList<>();
 
-        //
-        List<Book> borrowedBooks = library.getBorrowedBooks();
+        List<Integer> borrowedBooks = getAllReaders().stream()
+                .flatMap(reader -> reader.getBooks().stream())
+                .map(Book::getId)
+                .toList();
+        List<Integer> availableBooks = getAvailableBooksId();
+        //id книги встречается несколько раз
+
         boolean hasDuplicates = borrowedBooks.size() != new HashSet<>(borrowedBooks).size();
         if (hasDuplicates) {
             Set<Integer> dupBookIds = borrowedBooks.stream()
                     .filter(n -> Collections.frequency(borrowedBooks, n) > 1)
-                    .map(Book::getId)
                     .collect(Collectors.toSet());
 
-            List<Integer> dupReaderIds = getAllReaders().stream()
+            Set<Integer> dupReaderIds = getAllReaders().stream()
                     .filter(reader -> reader.getBooks().stream()
                             .anyMatch(book -> dupBookIds.contains(book.getId())))
                     .map(Reader::getId)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
             result.add(new LibraryProblem("Найдены дубли в списках выдачи", dupBookIds, dupReaderIds));
         }
 
+        //книга находится у читателя, но помечена доступной
+        Set<Integer> booksInLists = getAllReaders().stream()
+                .flatMap(reader -> reader.getBooks().stream())
+                .map(Book :: getId)
+                .filter(availableBooks::contains)
+                .collect(Collectors.toSet());
+        if (!booksInLists.isEmpty()){
+            Set<Integer> readerIds = getAllReaders().stream()
+                    .filter(reader -> reader.getBooks().stream()
+                            .anyMatch(book -> availableBooks.contains(book.getId())))
+                    .map(Reader::getId)
+                    .collect(Collectors.toSet());
+            result.add(new LibraryProblem("У читателя найдена книга, которая помечена доступной",booksInLists,readerIds));
+        }
+
+        //книга недоступна, но ни у одного читателя ее нет
+        //тут нужно возвращать пустой список читателей?
+        Set<Integer> unavailableBooks = getBorrowedBooksId().stream()
+                .filter(id -> getAllReaders().stream()
+                        .flatMap(reader -> reader.getBooks().stream())
+                        .noneMatch(book -> book.getId() == id))
+                .collect(Collectors.toSet());
+        if (!unavailableBooks.isEmpty()){
+            Set<Integer> emptyReadersSet = new HashSet<>();
+            result.add(new LibraryProblem("Книга недоступна, но ни у одного читателя ее нет", unavailableBooks, emptyReadersSet ));
+        }
+
+        //у читателя есть книга, отсутствующая в каталоге
+        Set<Integer> allBookIds = getAllBooks().stream()
+                .map(Book::getId)
+                .collect(Collectors.toSet());
+
+        Set<Integer> readersId = getAllReaders().stream()
+                .filter(reader -> reader.getBooks().stream()
+                        .anyMatch(book -> !allBookIds.contains(book.getId())))
+                .map(Reader::getId)
+                .collect(Collectors.toSet());
+
+        if (!readersId.isEmpty()){
+            Set<Integer> booksId = getAllReaders().stream()
+                    .filter(reader -> readersId.contains(reader.getId()))
+                    .flatMap(reader -> reader.getBooks().stream())
+                    .map(Book::getId)
+                    .filter(bookId -> !allBookIds.contains(bookId))
+                    .collect(Collectors.toSet());
+
+            result.add(new LibraryProblem("У читателя есть книга, отсутствующая в каталоге", booksId , readersId));
+        }
+
+        //Не до конца понял момент с сортировкой в конце 3го задания
         return result;
     }
 }

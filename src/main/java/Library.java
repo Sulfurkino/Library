@@ -88,6 +88,16 @@ public class Library {
         return result;
     }
 
+    public List<Integer> getBorrowedBooksId() {
+        List<Integer> result = new ArrayList<>();
+        for (Book book : books.values()) {
+            if (!book.isAvailable()) {
+                result.add(book.getId());
+            }
+        }
+        return result;
+    }
+
     public List<Integer> getAvailableBooksId() {
         List<Integer> result = new ArrayList<>();
         for (Book book : books.values()) {
