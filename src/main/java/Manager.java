@@ -1,3 +1,4 @@
+import java.sql.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -240,6 +241,45 @@ public class Manager {
         }
 
         //Не до конца понял момент с сортировкой в конце 3го задания
+        return result;
+    }
+
+    public Map<Integer, ArrayList<BookView>>  search(Optional<String> namePart,Optional<Integer> minYear, Optional<Integer> maxYear, Optional<Boolean> isAvailable){
+        Map<Integer, ArrayList<BookView>> result = new TreeMap<>();
+        List<Book> resultList = getAllBooks();
+
+        if (namePart.isPresent()){
+            List<Book> namePartResult = getAllBooks().stream()
+                    .filter(book -> book.getBookName().contains(namePart.get()))
+                    .toList();
+            resultList.retainAll(namePartResult);
+        }
+        if (minYear.isPresent() && maxYear.isPresent()){
+            List<Book> yearGapResult = getAllBooks().stream()
+                     .filter(book -> book.getPublishYear() >= minYear.get()
+                     && book.getPublishYear() <= maxYear.get())
+                     .toList();
+            resultList.retainAll(yearGapResult);
+        }
+        if (isAvailable.isPresent()){
+            List<Book> isAvailableResult = getAvailableBooks();
+            resultList.retainAll(isAvailableResult);
+        }
+
+        List<BookView> bookViewList = resultList.stream()
+                .map(book -> new BookView(
+                        book.getPublishYear(),
+                        book.getBookName(),
+                        book.getId(),
+                        book.isAvailable()
+                ))
+                .toList();
+
+        for (int i = 0; i < bookViewList.size(); i+=3) {
+            result.put(i/3, new ArrayList<>(
+                    bookViewList.subList(i,Math.min(i+3, bookViewList.size()))));
+        }
+
         return result;
     }
 }
