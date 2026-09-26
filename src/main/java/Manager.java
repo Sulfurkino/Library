@@ -158,11 +158,42 @@ public class Manager {
     }
 
     //Статистика выданных книг
-    public Map<Integer, Map<String, Long>> getBorrowedStats() {
-        Map<Integer, Map<String, Long>> result = library.getReaders().values().stream()
-                .flatMap(reader -> reader.getBooks().stream())
-                .collect(groupingBy(book -> ((book.getPublishYear() / 10) * 10),
-                        TreeMap::new, groupingBy(Book::getBookName, TreeMap::new, counting())));
+    public Map<Integer, Map<String, BorrowedBookStat>> getBorrowedStats() {
+
+        Map<Integer, Map<String, BorrowedBookStat>> result = new TreeMap<>();
+
+        for (Reader reader : library.getReaders().values()) {
+            for (Book book : reader.getBooks()) {
+
+                int decade = (book.getPublishYear() / 10) * 10;
+
+                result.putIfAbsent(decade, new TreeMap<>());
+
+                Map<String, BorrowedBookStat> books = result.get(decade);
+
+                BorrowedBookStat stat = books.get(book.getBookName());
+
+                if (stat == null) {
+                    stat = new BorrowedBookStat(
+                            0,
+                            new ArrayList<>()
+                    );
+                    books.put(book.getBookName(), stat);
+                }
+
+                stat.setCount(stat.getCount() + 1);
+
+                if (!stat.getReaderNames().contains(reader.getName())) {
+                    stat.getReaderNames().add(reader.getName());
+                }
+            }
+        }
+
+        for (Map<String, BorrowedBookStat> books : result.values()) {
+            for (BorrowedBookStat stat : books.values()) {
+                stat.getReaderNames().sort(String::compareTo);
+            }
+        }
 
         return result;
     }
@@ -223,50 +254,85 @@ public class Manager {
                 .map(Book::getId)
                 .collect(Collectors.toSet());
 
-        Set<Integer> readersId = getAllReaders().stream()
-                .filter(reader -> reader.getBooks().stream()
-                        .anyMatch(book -> !allBookIds.contains(book.getId())))
-                .map(Reader::getId)
-                .collect(Collectors.toSet());
+        getAllReaders().stream()
+                .flatMap(reader -> reader.getBooks().stream()
+                        .filter(book -> !allBookIds.contains(book.getId()))
+                        .map(book -> new LibraryProblem(
+                                "У читателя есть книга, отсутствующая в каталоге",
+                                Set.of(book.getId()),
+                                Set.of(reader.getId())
+                        )))
+                .forEach(result::add);
 
-        if (!readersId.isEmpty()){
-            Set<Integer> booksId = getAllReaders().stream()
-                    .filter(reader -> readersId.contains(reader.getId()))
-                    .flatMap(reader -> reader.getBooks().stream())
-                    .map(Book::getId)
-                    .filter(bookId -> !allBookIds.contains(bookId))
-                    .collect(Collectors.toSet());
-
-            result.add(new LibraryProblem("У читателя есть книга, отсутствующая в каталоге", booksId , readersId));
-        }
-
-        //Не до конца понял момент с сортировкой в конце 3го задания
         return result;
     }
 
-    public Map<Integer, ArrayList<BookView>>  search(Optional<String> namePart,Optional<Integer> minYear, Optional<Integer> maxYear, Optional<Boolean> isAvailable){
-        Map<Integer, ArrayList<BookView>> result = new TreeMap<>();
+    public SearchResult  search(
+            Optional<String> namePart,
+            Optional<Integer> minYear,
+            Optional<Integer> maxYear,
+            Optional<Boolean> isAvailable,
+            int page,
+            int pageSize){
+
+        if (page < 0 || pageSize <= 0) {
+            throw new IllegalArgumentException("Некорректный номер или размер страницы");
+        }
+
+        if (minYear.isPresent() && maxYear.isPresent()
+                && minYear.get() > maxYear.get()) {
+            throw new IllegalArgumentException("Минимальный год больше максимального");
+        }
+
         List<Book> resultList = getAllBooks();
 
         if (namePart.isPresent()){
-            List<Book> namePartResult = getAllBooks().stream()
-                    .filter(book -> book.getBookName().contains(namePart.get()))
+            String name = namePart.get().trim().toLowerCase();
+            resultList = resultList.stream()
+                    .filter(book -> book.getBookName()
+                            .toLowerCase()
+                            .contains(name))
                     .toList();
-            resultList.retainAll(namePartResult);
-        }
-        if (minYear.isPresent() && maxYear.isPresent()){
-            List<Book> yearGapResult = getAllBooks().stream()
-                     .filter(book -> book.getPublishYear() >= minYear.get()
-                     && book.getPublishYear() <= maxYear.get())
-                     .toList();
-            resultList.retainAll(yearGapResult);
-        }
-        if (isAvailable.isPresent()){
-            List<Book> isAvailableResult = getAvailableBooks();
-            resultList.retainAll(isAvailableResult);
         }
 
-        List<BookView> bookViewList = resultList.stream()
+        if (minYear.isPresent()) {
+            resultList = resultList.stream()
+                    .filter(book -> book.getPublishYear() >= minYear.get())
+                    .toList();
+        }
+
+        if (maxYear.isPresent()) {
+            resultList = resultList.stream()
+                    .filter(book -> book.getPublishYear() <= maxYear.get())
+                    .toList();
+        }
+
+        if (isAvailable.isPresent()) {
+            boolean available = isAvailable.get();
+
+            resultList = resultList.stream()
+                    .filter(book -> book.isAvailable() == available)
+                    .toList();
+        }
+
+        resultList.sort(
+                Comparator.comparingInt(Book::getPublishYear)
+                        .reversed()
+                        .thenComparing(Book::getBookName)
+                        .thenComparingInt(Book::getId)
+        );
+
+        int total = resultList.size();
+
+        int from = page * pageSize;
+
+        if (from >= total) {
+            return new SearchResult(new ArrayList<>(), total);
+        }
+
+        int to = Math.min(from + pageSize, total);
+
+        List<BookView> books = resultList.subList(from, to).stream()
                 .map(book -> new BookView(
                         book.getPublishYear(),
                         book.getBookName(),
@@ -275,11 +341,6 @@ public class Manager {
                 ))
                 .toList();
 
-        for (int i = 0; i < bookViewList.size(); i+=3) {
-            result.put(i/3, new ArrayList<>(
-                    bookViewList.subList(i,Math.min(i+3, bookViewList.size()))));
-        }
-
-        return result;
+        return new SearchResult(books, total);
     }
 }
