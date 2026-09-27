@@ -312,9 +312,9 @@ public class Manager {
 
             resultList = resultList.stream()
                     .filter(book -> book.isAvailable() == available)
-                    .toList();
+                    .collect(Collectors.toList());
         }
-
+        resultList = new ArrayList<>(resultList);
         resultList.sort(
                 Comparator.comparingInt(Book::getPublishYear)
                         .reversed()

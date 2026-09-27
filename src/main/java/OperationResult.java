@@ -1,6 +1,6 @@
 import lombok.*;
 
-
+@ToString
 @Setter
 @Getter
 @AllArgsConstructor
