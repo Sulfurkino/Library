@@ -267,54 +267,60 @@ public class Manager {
         return result;
     }
 
-    public SearchResult  search(
+    public SearchResult search(
             Optional<String> namePart,
             Optional<Integer> minYear,
             Optional<Integer> maxYear,
             Optional<Boolean> isAvailable,
             int page,
-            int pageSize){
+            int pageSize) {
 
         if (page < 0 || pageSize <= 0) {
             throw new IllegalArgumentException("Некорректный номер или размер страницы");
         }
 
-        if (minYear.isPresent() && maxYear.isPresent()
+        if (minYear != null && maxYear != null
+                && minYear.isPresent() && maxYear.isPresent()
                 && minYear.get() > maxYear.get()) {
             throw new IllegalArgumentException("Минимальный год больше максимального");
         }
 
-        List<Book> resultList = getAllBooks();
+        List<Book> resultList = new ArrayList<>(getAllBooks());
 
-        if (namePart.isPresent()){
+        if (namePart != null && namePart.isPresent()) {
             String name = namePart.get().trim().toLowerCase();
-            resultList = resultList.stream()
-                    .filter(book -> book.getBookName()
-                            .toLowerCase()
-                            .contains(name))
-                    .toList();
+
+            if (!name.isEmpty()) {
+                resultList = resultList.stream()
+                        .filter(book -> book.getBookName()
+                                .toLowerCase()
+                                .contains(name))
+                        .toList();
+            }
         }
 
-        if (minYear.isPresent()) {
+        if (minYear != null && minYear.isPresent()) {
             resultList = resultList.stream()
                     .filter(book -> book.getPublishYear() >= minYear.get())
                     .toList();
         }
 
-        if (maxYear.isPresent()) {
+        if (maxYear != null && maxYear.isPresent()) {
             resultList = resultList.stream()
                     .filter(book -> book.getPublishYear() <= maxYear.get())
                     .toList();
         }
 
-        if (isAvailable.isPresent()) {
+        if (isAvailable != null && isAvailable.isPresent()) {
             boolean available = isAvailable.get();
 
             resultList = resultList.stream()
                     .filter(book -> book.isAvailable() == available)
-                    .collect(Collectors.toList());
+                    .toList();
         }
+
         resultList = new ArrayList<>(resultList);
+
         resultList.sort(
                 Comparator.comparingInt(Book::getPublishYear)
                         .reversed()
