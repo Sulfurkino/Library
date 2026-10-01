@@ -108,6 +108,20 @@ public class Library {
         return result;
     }
 
+    public Map<Integer, BookReadersStats> getBookReadersStats() {
+        Map<Integer, BookReadersStats> result = new HashMap<>();
+
+        for (Reader reader : readers.values()) {
+            for (Book book : reader.getBooks()) {
+                result
+                        .computeIfAbsent(book.getId(), id -> new BookReadersStats())
+                        .add(reader.getId());
+            }
+        }
+
+        return result;
+    }
+
     public List<Book> getAllBooks() {
         return new ArrayList<>(books.values());
     }
