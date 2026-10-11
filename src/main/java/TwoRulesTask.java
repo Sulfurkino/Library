@@ -18,25 +18,24 @@ public class TwoRulesTask {
             //-1
             if (bookReadersStats.getOccurrences() > 1) {
                 result.add(new LibraryProblem(
-                        "Найдены дубли в списке выдачи",
-                        Set.of(bookId),
-                        new LinkedHashSet<>(sortedReaders)
+                        ProblemType.DUPLICATE,
+                        bookId,
+                        sortedReaders
                 ));
             }
             //-2
             if (!library.getBooks().containsKey(bookId)) {
                 result.add(new LibraryProblem(
-                        "У читателя есть книга, отсутствующая в каталоге",
-                        Set.of(bookId),
-                        new LinkedHashSet<>(sortedReaders)
+                        ProblemType.MISSING_IN_CATALOG,
+                        bookId,
+                        sortedReaders
                 ));
             }
         }
 
         result.sort(
-                Comparator.comparing((LibraryProblem problem) ->
-                                problem.getBookId().iterator().next())
-                        .thenComparing(LibraryProblem::getExceptionType)
+                Comparator.comparingInt(LibraryProblem::bookId)
+                        .thenComparingInt(problem -> problem.type().ordinal())
         );
 
         return result;

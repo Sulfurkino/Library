@@ -25,6 +25,7 @@ public class Main {
         Reader reader40 = new Reader(new ArrayList<>(),4,"Николай");
 
         Reader reader09 = new Reader(new ArrayList<>(),9,"09");
+
         library.setReaders(Map.of(
                 2, reader20,
                 9, reader09
@@ -46,8 +47,22 @@ public class Main {
         reader20.getBooks().add(book50);
         reader20.getBooks().add(book60);
 
+        for (LibraryProblem libraryProblem : twoRulesTask.findProblems(library)){
+            System.out.println(libraryProblem);
+        }
 
+        //проверка problemSummary
+        List<LibraryProblem> problems = twoRulesTask.findProblems(library);
 
+        for (LibraryProblem libraryProblem : problems) {
+            System.out.println(libraryProblem);
+        }
+
+        Map<ProblemType, Integer> summary = ProblemSummary.countByType(problems);
+
+        for (Map.Entry<ProblemType, Integer> entry : summary.entrySet()) {
+            System.out.println(entry.getKey() + " = " + entry.getValue());
+        }
 
 
 

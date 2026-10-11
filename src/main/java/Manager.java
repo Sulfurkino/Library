@@ -214,12 +214,19 @@ public class Manager {
                     .filter(n -> Collections.frequency(borrowedBooks, n) > 1)
                     .collect(Collectors.toSet());
 
-            Set<Integer> dupReaderIds = getAllReaders().stream()
-                    .filter(reader -> reader.getBooks().stream()
-                            .anyMatch(book -> dupBookIds.contains(book.getId())))
-                    .map(Reader::getId)
-                    .collect(Collectors.toSet());
-            result.add(new LibraryProblem("Найдены дубли в списках выдачи", dupBookIds, dupReaderIds));
+            for (Integer bookId : dupBookIds) {
+                List<Integer> dupReaderIds = getAllReaders().stream()
+                        .filter(reader -> reader.getBooks().stream()
+                                .anyMatch(book -> book.getId() == bookId))
+                        .map(Reader::getId)
+                        .toList();
+
+                result.add(new LibraryProblem(
+                        ProblemType.DUPLICATE,
+                        bookId,
+                        dupReaderIds
+                ));
+            }
         }
 
         //книга находится у читателя, но помечена доступной
@@ -228,25 +235,36 @@ public class Manager {
                 .map(Book :: getId)
                 .filter(availableBooks::contains)
                 .collect(Collectors.toSet());
-        if (!booksInLists.isEmpty()){
-            Set<Integer> readerIds = getAllReaders().stream()
-                    .filter(reader -> reader.getBooks().stream()
-                            .anyMatch(book -> availableBooks.contains(book.getId())))
-                    .map(Reader::getId)
-                    .collect(Collectors.toSet());
-            result.add(new LibraryProblem("У читателя найдена книга, которая помечена доступной",booksInLists,readerIds));
+        if (!booksInLists.isEmpty()) {
+            for (Integer bookId : booksInLists) {
+                List<Integer> readerIds = getAllReaders().stream()
+                        .filter(reader -> reader.getBooks().stream()
+                                .anyMatch(book -> book.getId() == bookId))
+                        .map(Reader::getId)
+                        .toList();
+
+                result.add(new LibraryProblem(
+                        ProblemType.AVAILABLE_BUT_BORROWED,
+                        bookId,
+                        readerIds
+                ));
+            }
         }
 
         //книга недоступна, но ни у одного читателя ее нет
-        //тут нужно возвращать пустой список читателей?
         Set<Integer> unavailableBooks = getBorrowedBooksId().stream()
                 .filter(id -> getAllReaders().stream()
                         .flatMap(reader -> reader.getBooks().stream())
                         .noneMatch(book -> book.getId() == id))
                 .collect(Collectors.toSet());
-        if (!unavailableBooks.isEmpty()){
-            Set<Integer> emptyReadersSet = new HashSet<>();
-            result.add(new LibraryProblem("Книга недоступна, но ни у одного читателя ее нет", unavailableBooks, emptyReadersSet ));
+        if (!unavailableBooks.isEmpty()) {
+            for (Integer bookId : unavailableBooks) {
+                result.add(new LibraryProblem(
+                        ProblemType.UNAVAILABLE_NOT_BORROWED,
+                        bookId,
+                        List.of()
+                ));
+            }
         }
 
         //у читателя есть книга, отсутствующая в каталоге
@@ -258,9 +276,9 @@ public class Manager {
                 .flatMap(reader -> reader.getBooks().stream()
                         .filter(book -> !allBookIds.contains(book.getId()))
                         .map(book -> new LibraryProblem(
-                                "У читателя есть книга, отсутствующая в каталоге",
-                                Set.of(book.getId()),
-                                Set.of(reader.getId())
+                                ProblemType.MISSING_IN_CATALOG,
+                                book.getId(),
+                                List.of(reader.getId())
                         )))
                 .forEach(result::add);
 
