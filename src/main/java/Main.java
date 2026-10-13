@@ -1,29 +1,15 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class Main {
 
     public static void main(String[] args) {
 
         Library library = new Library();
-
-        // Отдельный каталог для точной проверки сортировки и страниц
-        Book book00 = new Book("Alpha", 0, 2020);
-        Book book10 = new Book("Beta", 10, 2020);
-        Book book20 = new Book("Alpha", 20, 2020);
-        Book book30 = new Book("Zulu", 30, 2022);
-
         Book book40 = new Book("40", 40, 2022);
         Book book50 = new Book("Zulu50", 50, 2022);
         Book book60 = new Book("Zulu60", 60, 2022);
 
-        Reader reader10 = new Reader(new ArrayList<>(),1,"Николай");
         Reader reader20 = new Reader(new ArrayList<>(),2,"02");
-        Reader reader30 = new Reader(new ArrayList<>(),3,"Николай");
-        Reader reader40 = new Reader(new ArrayList<>(),4,"Николай");
-
         Reader reader09 = new Reader(new ArrayList<>(),9,"09");
 
         library.setReaders(Map.of(
@@ -54,18 +40,24 @@ public class Main {
         //проверка problemSummary
         List<LibraryProblem> problems = twoRulesTask.findProblems(library);
 
-        for (LibraryProblem libraryProblem : problems) {
-            System.out.println(libraryProblem);
+        Map<ProblemType, Integer> expected = new EnumMap<>(ProblemType.class);
+        expected.put(ProblemType.DUPLICATE, 2);
+        expected.put(ProblemType.MISSING_IN_CATALOG, 3);
+        expected.put(ProblemType.AVAILABLE_BUT_BORROWED, 0);
+        expected.put(ProblemType.UNAVAILABLE_NOT_BORROWED, 0);
+
+        Map<ProblemType, Integer> actual = ProblemSummary.countByType(problems);
+
+        if (!expected.equals(actual)) {
+            throw new AssertionError(
+                    "Тест провалился."
+                            + "Ожидалось-" + expected + "\n"
+                            + "Получено-" + actual
+            );
         }
 
-        Map<ProblemType, Integer> summary = ProblemSummary.countByType(problems);
-
-        for (Map.Entry<ProblemType, Integer> entry : summary.entrySet()) {
-            System.out.println(entry.getKey() + " = " + entry.getValue());
-        }
-
-
-
+        System.out.println("Тест пройден");
+        System.out.println("Результат-" + actual);
 
 //        // ============================================================
 //        // 1. Сортировка и страницы

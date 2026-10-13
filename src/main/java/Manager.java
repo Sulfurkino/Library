@@ -267,20 +267,28 @@ public class Manager {
             }
         }
 
-        //у читателя есть книга, отсутствующая в каталоге
+        // у читателя есть книга, отсутствующая в каталоге
         Set<Integer> allBookIds = getAllBooks().stream()
                 .map(Book::getId)
                 .collect(Collectors.toSet());
 
-        getAllReaders().stream()
+        Map<Integer, List<Integer>> missingBookReaders = getAllReaders().stream()
                 .flatMap(reader -> reader.getBooks().stream()
                         .filter(book -> !allBookIds.contains(book.getId()))
-                        .map(book -> new LibraryProblem(
-                                ProblemType.MISSING_IN_CATALOG,
-                                book.getId(),
-                                List.of(reader.getId())
-                        )))
-                .forEach(result::add);
+                        .map(book -> Map.entry(book.getId(), reader.getId())))
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getKey,
+                        TreeMap::new,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())
+                ));
+
+        missingBookReaders.forEach((bookId, readerIds) ->
+                result.add(new LibraryProblem(
+                        ProblemType.MISSING_IN_CATALOG,
+                        bookId,
+                        readerIds
+                ))
+        );
 
         return result;
     }

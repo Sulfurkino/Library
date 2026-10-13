@@ -35,7 +35,7 @@ public class TwoRulesTask {
 
         result.sort(
                 Comparator.comparingInt(LibraryProblem::bookId)
-                        .thenComparingInt(problem -> problem.type().ordinal())
+                        .thenComparing(LibraryProblem::type)
         );
 
         return result;
