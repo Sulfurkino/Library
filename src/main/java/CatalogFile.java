@@ -1,9 +1,12 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Каталог Library в файле CSV и отчёт о проблемах в файл.
@@ -11,7 +14,7 @@ import java.util.List;
 public class CatalogFile {
     public static ImportResult load(Path path, Library library) throws IOException {
         if (!Files.exists(path)) {
-            throw new IOException("Файл не существует.");
+            throw new NoSuchFileException("Файл не существует.");
         }
 
         if (Files.isDirectory(path)) {
@@ -33,21 +36,27 @@ public class CatalogFile {
             String line;
             int lineNumber = 0;
             while ((line = bufferedReader.readLine()) != null) {
-                lineNumber+=1;
                 String[] fields = line.split(";", -1);
+                lineNumber+=1;
+                if (line.isEmpty()){
+                    continue;
+                }
+                //костыль пропускающий первую строчку.
+                if (fields[0].equals("id")){
+                    continue;
+                }
                 //id;
-                if (fields[0] == null || fields[0].isBlank()) {
+                if (fields[0].isBlank()) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
                     continue;
                 }
+                int bookId;
                 try {
-                    Integer.parseInt(fields[0]);
+                  bookId = Integer.parseInt(fields[0].trim());
                 } catch (NumberFormatException e) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
                     continue;
                 }
-
-                int bookId = Integer.parseInt(fields[0]);
 
                 if (bookId<0){
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
@@ -70,11 +79,11 @@ public class CatalogFile {
                 try {
                     Integer.parseInt(fields[2]);
                 } catch (NumberFormatException e) {
-                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
+                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_YEAR));
                     continue;
                 }
                 if (Integer.parseInt(fields[2])<0){
-                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
+                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_YEAR));
                     continue;
                 }
                 // available
@@ -103,34 +112,35 @@ public class CatalogFile {
      * Пишет отчёт (UTF-8): заголовок bookId;type;title;readers и строки как в тренажёре 04.
      * Тип — name(), не ordinal(). Существующий файл перезаписывается.
      */
-//    public static void writeCSV(String filename, List<String[]> records) throws IOException {
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-//            for (String[] record : records) {
-//                writer.write(String.join(",", record));
-//                writer.newLine();
-//            }
-//        }
-//    }
-    public static void writeReport(Path path, List<LibraryProblem> problems) throws IOException {
-        if (!Files.exists(path)) {
-            throw new IOException("Файл не существует.");
-        }
 
+    public static void writeReport(Path path, List<LibraryProblem> problems) throws IOException {
         if (Files.isDirectory(path)) {
             throw new IOException("Указанный путь ведёт к директории, а не к файлу.");
         }
-
-        if (!Files.isRegularFile(path)) {
-            throw new IOException("Указанный путь не является обычным файлом.");
-        }
-
-        if (!Files.isReadable(path)) {
-            throw new IOException("Файл недоступен для чтения.");
-        }
+        List<LibraryProblem> sortedProblems = problems.stream()
+                .sorted(Comparator.comparingInt(LibraryProblem::bookId)
+                        .thenComparing(p -> p.type().name()))
+                .toList();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), StandardCharsets.UTF_8))) {
-            for (LibraryProblem libraryProblem : problems) {
-                writer.write(libraryProblem.toString());
+            //добавил после просмотра тестов заголовок чтобы тест на 4 строчки проходил успешно,
+            // не понял по тз что нужно сначала писать в репорте именно это,
+            // так как формулировка как в тренажере 04 для меня была не ясна
+            writer.write("bookId;type;title;readers");
+            writer.newLine();
+
+            for (LibraryProblem libraryProblem : sortedProblems) {
+                String readers = libraryProblem.readerIds().stream()
+                        .sorted()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","));
+
+                writer.write(
+                        libraryProblem.bookId() + ";"
+                                + libraryProblem.type().name() + ";"
+                                + libraryProblem.type().title() + ";"
+                                + readers
+                );
                 writer.newLine();
             }
         }
