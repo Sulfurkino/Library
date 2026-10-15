@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,12 +10,20 @@ import java.util.List;
  */
 public class CatalogFile {
     public static ImportResult load(Path path, Library library) throws IOException {
-        boolean exists = Files.exists(path);
-        boolean isDir = Files.isDirectory(path);
-        boolean isFile = Files.isRegularFile(path);
-        boolean readable = Files.isReadable(path);
-        if (!(exists && isDir && isFile && readable)) {
-            throw new IOException("Файл отсутствует, либо поврежден.");
+        if (!Files.exists(path)) {
+            throw new IOException("Файл не существует.");
+        }
+
+        if (Files.isDirectory(path)) {
+            throw new IOException("Указанный путь ведёт к директории, а не к файлу.");
+        }
+
+        if (!Files.isRegularFile(path)) {
+            throw new IOException("Указанный путь не является обычным файлом.");
+        }
+
+        if (!Files.isReadable(path)) {
+            throw new IOException("Файл недоступен для чтения.");
         }
 
         List<Integer> importedIds = new ArrayList<>();
@@ -97,8 +103,36 @@ public class CatalogFile {
      * Пишет отчёт (UTF-8): заголовок bookId;type;title;readers и строки как в тренажёре 04.
      * Тип — name(), не ordinal(). Существующий файл перезаписывается.
      */
+//    public static void writeCSV(String filename, List<String[]> records) throws IOException {
+//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+//            for (String[] record : records) {
+//                writer.write(String.join(",", record));
+//                writer.newLine();
+//            }
+//        }
+//    }
     public static void writeReport(Path path, List<LibraryProblem> problems) throws IOException {
-        // TODO: подготовь строки и Files.write(path, lines, StandardCharsets.UTF_8).
-        throw new UnsupportedOperationException("TODO: реализуй writeReport");
+        if (!Files.exists(path)) {
+            throw new IOException("Файл не существует.");
+        }
+
+        if (Files.isDirectory(path)) {
+            throw new IOException("Указанный путь ведёт к директории, а не к файлу.");
+        }
+
+        if (!Files.isRegularFile(path)) {
+            throw new IOException("Указанный путь не является обычным файлом.");
+        }
+
+        if (!Files.isReadable(path)) {
+            throw new IOException("Файл недоступен для чтения.");
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), StandardCharsets.UTF_8))) {
+            for (LibraryProblem libraryProblem : problems) {
+                writer.write(libraryProblem.toString());
+                writer.newLine();
+            }
+        }
     }
 }
