@@ -26,14 +26,14 @@ public class CatalogFile {
             Map<String, Integer> columns = CatalogHeader.columns(line);
             int lineNumber = 1;
             while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split(";", -1);
-
-                lineNumber+=1;
-                if (fields.length != 4 ){
-                    errors.add(new ImportError(lineNumber, ImportError.Reason.FIELD_COUNT));
+                lineNumber++;
+                if (line.trim().isEmpty()) {
                     continue;
                 }
-                if (line.isEmpty()){
+                String[] fields = line.split(";", -1);
+
+                if (fields.length != 4) {
+                    errors.add(new ImportError(lineNumber, ImportError.Reason.FIELD_COUNT));
                     continue;
                 }
                 //id;
@@ -103,35 +103,23 @@ public class CatalogFile {
      */
 
     public static void writeReport(Path path, List<LibraryProblem> problems) throws IOException {
-        if (Files.isDirectory(path)) {
-            throw new IOException("Указанный путь ведёт к директории, а не к файлу.");
-        }
-        List<LibraryProblem> sortedProblems = problems.stream()
-                .sorted(Comparator.comparingInt(LibraryProblem::bookId)
-                        .thenComparing(p -> p.type().name()))
+        List<LibraryProblem> problemsCopy = problems.stream()
+                .sorted(ReportOrder.byBookAndType())
                 .toList();
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), StandardCharsets.UTF_8))) {
-            //добавил после просмотра тестов заголовок чтобы тест на 4 строчки проходил успешно,
-            // не понял по тз что нужно сначала писать в репорте именно это,
-            // так как формулировка как в тренажере 04 для меня была не ясна
-            writer.write("bookId;type;title;readers");
-            writer.newLine();
-
-            for (LibraryProblem libraryProblem : sortedProblems) {
-                String readers = libraryProblem.readerIds().stream()
-                        .sorted()
-                        .map(String::valueOf)
-                        .collect(Collectors.joining(","));
-
-                writer.write(
-                        libraryProblem.bookId() + ";"
-                                + libraryProblem.type().name() + ";"
-                                + libraryProblem.type().title() + ";"
-                                + readers
-                );
-                writer.newLine();
+        try(BufferedWriter bufferedWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8) ){
+            bufferedWriter.write("bookId;type;title;readers");
+            bufferedWriter.newLine();
+            for (LibraryProblem problem : problemsCopy){
+                String line = ReportLine.toLine(problem);
+                bufferedWriter.write(line);
+                bufferedWriter.newLine();
             }
+
+
+
         }
+    }
+    public static List<LibraryProblem> readReport(Path path){
+        throw new UnsupportedOperationException();
     }
 }
