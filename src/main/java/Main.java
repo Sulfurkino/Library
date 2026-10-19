@@ -59,6 +59,36 @@ public class Main {
         System.out.println("Тест пройден");
         System.out.println("Результат-" + actual);
 
+        //HomeWork3
+        Library hw3 = new Library();
+        Book hw3Book40 = new Book("Сорок", 40, 2000);
+        hw3Book40.setAvailable(false);
+        hw3.addBook(hw3Book40);
+        Book hw3Book50 = new Book("Пятьдесят", 50, 2000);
+        Reader hw3Reader2 = new Reader(
+                new ArrayList<>(List.of(hw3Book50)), 2, "Второй");
+        Reader hw3Reader9 = new Reader(new ArrayList<>(
+                List.of(hw3Book40, hw3Book40, hw3Book50)),
+                9, "Девятый");
+        hw3.setReaders(Map.of(2, hw3Reader2, 9, hw3Reader9));
+
+        List<LibraryProblem> expectedProblems = List.of(
+                new LibraryProblem(ProblemType.DUPLICATE, 40, List.of(9)),
+                new LibraryProblem(ProblemType.DUPLICATE, 50, List.of(2, 9)),
+                new LibraryProblem(ProblemType.MISSING_IN_CATALOG, 50, List.of(2, 9))
+        );
+
+        List<LibraryProblem> actualProblems = new Manager(hw3).validateLibrary();
+
+        if (!expectedProblems.equals(actualProblems)) {
+            throw new AssertionError(
+                    "Ошибка. Ожидали - " + expectedProblems + "\n"
+                    + "Получили- " + actualProblems
+            );
+        }
+
+        System.out.println("Успех");
+
 //        // ============================================================
 //        // 1. Сортировка и страницы
 //        // ============================================================

@@ -207,27 +207,9 @@ public class Manager {
                 .toList();
         List<Integer> availableBooks = getAvailableBooksId();
         //id книги встречается несколько раз
+        // у читателя есть книга, отсутствующая в каталоге
 
-        boolean hasDuplicates = borrowedBooks.size() != new HashSet<>(borrowedBooks).size();
-        if (hasDuplicates) {
-            Set<Integer> dupBookIds = borrowedBooks.stream()
-                    .filter(n -> Collections.frequency(borrowedBooks, n) > 1)
-                    .collect(Collectors.toSet());
-
-            for (Integer bookId : dupBookIds) {
-                List<Integer> dupReaderIds = getAllReaders().stream()
-                        .filter(reader -> reader.getBooks().stream()
-                                .anyMatch(book -> book.getId() == bookId))
-                        .map(Reader::getId)
-                        .toList();
-
-                result.add(new LibraryProblem(
-                        ProblemType.DUPLICATE,
-                        bookId,
-                        dupReaderIds
-                ));
-            }
-        }
+        result.addAll(new TwoRulesTask().findProblems(library));
 
         //книга находится у читателя, но помечена доступной
         Set<Integer> booksInLists = getAllReaders().stream()
@@ -267,28 +249,8 @@ public class Manager {
             }
         }
 
-        // у читателя есть книга, отсутствующая в каталоге
-        Set<Integer> allBookIds = getAllBooks().stream()
-                .map(Book::getId)
-                .collect(Collectors.toSet());
 
-        Map<Integer, List<Integer>> missingBookReaders = getAllReaders().stream()
-                .flatMap(reader -> reader.getBooks().stream()
-                        .filter(book -> !allBookIds.contains(book.getId()))
-                        .map(book -> Map.entry(book.getId(), reader.getId())))
-                .collect(Collectors.groupingBy(
-                        Map.Entry::getKey,
-                        TreeMap::new,
-                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())
-                ));
 
-        missingBookReaders.forEach((bookId, readerIds) ->
-                result.add(new LibraryProblem(
-                        ProblemType.MISSING_IN_CATALOG,
-                        bookId,
-                        readerIds
-                ))
-        );
 
         return result;
     }
