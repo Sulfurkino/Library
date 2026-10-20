@@ -88,6 +88,11 @@ public class Main {
         }
 
         System.out.println("Успех");
+        System.out.println("Результат-");
+        for (LibraryProblem libraryProblem : actualProblems) {
+            System.out.println(libraryProblem);
+        }
+
 
 //        // ============================================================
 //        // 1. Сортировка и страницы

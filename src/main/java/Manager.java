@@ -1,13 +1,7 @@
-import java.sql.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-
 public class Manager {
-
-    //Стоит ли делать поле final?
     private Library library;
     private int id = 0;
 
@@ -151,8 +145,6 @@ public class Manager {
             resultMessage += "-Попробуйте учесть причины отказа и обновить данные\n";
         }
 
-        //перечисление признаков успеха и причин отказа-
-
         return new OperationResult(isSuccessful, resultMessage);
 
     }
@@ -201,10 +193,6 @@ public class Manager {
     public List<LibraryProblem> validateLibrary() {
         List<LibraryProblem> result = new ArrayList<>();
 
-        List<Integer> borrowedBooks = getAllReaders().stream()
-                .flatMap(reader -> reader.getBooks().stream())
-                .map(Book::getId)
-                .toList();
         List<Integer> availableBooks = getAvailableBooksId();
         //id книги встречается несколько раз
         // у читателя есть книга, отсутствующая в каталоге
@@ -248,10 +236,6 @@ public class Manager {
                 ));
             }
         }
-
-
-
-
         return result;
     }
 

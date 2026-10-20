@@ -1,13 +1,10 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Каталог Library в файле CSV и отчёт о проблемах в файл.
@@ -17,7 +14,6 @@ public class CatalogFile {
         List<Integer> importedIds = new ArrayList<>();
         List<ImportError> errors = new ArrayList<>();
 
-        //fields[columns.get("year")]
         try (BufferedReader bufferedReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             String line = bufferedReader.readLine();
             if (line == null){
@@ -27,56 +23,52 @@ public class CatalogFile {
             int lineNumber = 1;
             while ((line = bufferedReader.readLine()) != null) {
                 lineNumber++;
-                if (line.trim().isEmpty()) {
+                if (line.isBlank()) {
                     continue;
                 }
                 String[] fields = line.split(";", -1);
 
-                if (fields.length != 4) {
+                if (fields.length != columns.size()) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.FIELD_COUNT));
                     continue;
                 }
-                //id;
-                if (fields[columns.get("id")].trim().isBlank()) {
-                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
-                    continue;
-                }
+
+                String idField = fields[columns.get("id")].trim();
+                String nameField = fields[columns.get("name")].trim();
+                String yearField = fields[columns.get("year")].trim();
+                String availableField = fields[columns.get("available")].trim();
+
+                // id
                 int bookId;
                 try {
-                    bookId = Integer.parseInt(fields[columns.get("id")].trim());
+                    bookId = Integer.parseInt(idField);
                 } catch (NumberFormatException e) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
                     continue;
                 }
 
-                if (bookId<0){
+                if (bookId < 0){
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
                     continue;
                 }
-                // name;
-                if (fields[columns.get("name")].trim().isBlank()) {
+
+                // name
+                if (nameField.isBlank()) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.EMPTY_NAME));
                     continue;
                 }
-                // year;
-                if (fields[columns.get("year")].trim().isBlank()) {
-                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_YEAR));
-                    continue;
-                }
+
+                // year
                 try {
-                    Integer.parseInt(fields[columns.get("year")].trim());
+                    Integer.parseInt(yearField);
                 } catch (NumberFormatException e) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_YEAR));
                     continue;
                 }
 
                 // available
-                if (fields[columns.get("available")].trim().isBlank()) {
-                    errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_AVAILABLE));
-                    continue;
-                }
-                boolean isBoolean = "true".equalsIgnoreCase(fields[columns.get("available")].trim())
-                        || "false".equalsIgnoreCase(fields[columns.get("available")].trim());
+                boolean isBoolean = "true".equalsIgnoreCase(availableField)
+                        || "false".equalsIgnoreCase(availableField);
                 if (!isBoolean){
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_AVAILABLE));
                     continue;
@@ -87,9 +79,9 @@ public class CatalogFile {
                     continue;
                 }
 
-                //добавление
-                library.addBook(new Book(fields[columns.get("name")].trim(),bookId,Integer.parseInt(fields[columns.get("year")].trim())));
-                library.getBooks().get(bookId).setAvailable(Boolean.parseBoolean(fields[columns.get("available")].trim()));
+                // добавление
+                library.addBook(new Book(nameField, bookId, Integer.parseInt(yearField)));
+                library.getBooks().get(bookId).setAvailable(Boolean.parseBoolean(availableField));
                 importedIds.add(bookId);
             }
 
@@ -97,16 +89,11 @@ public class CatalogFile {
         return new ImportResult(importedIds, errors);
     }
 
-    /**
-     * Пишет отчёт (UTF-8): заголовок bookId;type;title;readers и строки как в тренажёре 04.
-     * Тип — name(), не ordinal(). Существующий файл перезаписывается.
-     */
-
     public static void writeReport(Path path, List<LibraryProblem> problems) throws IOException {
         List<LibraryProblem> problemsCopy = problems.stream()
                 .sorted(ReportOrder.byBookAndType())
                 .toList();
-        try(BufferedWriter bufferedWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8) ){
+        try(BufferedWriter bufferedWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)){
             bufferedWriter.write("bookId;type;title;readers");
             bufferedWriter.newLine();
             for (LibraryProblem problem : problemsCopy){
@@ -114,9 +101,6 @@ public class CatalogFile {
                 bufferedWriter.write(line);
                 bufferedWriter.newLine();
             }
-
-
-
         }
     }
     public static List<LibraryProblem> readReport(Path path){
