@@ -21,16 +21,17 @@ public class Manager {
         library.addBook(newBook);
     }
 
+    public Optional<Book> getBookByName(String bookName) {
+        return library.findBookByName(bookName);
+    }
+
+
     public void removeBook(Book bookToRemove) {
         library.removeBook(bookToRemove);
     }
 
-    public Book getBookById(int bookId) {
+    public Optional<Book> getBookById(int bookId) {
         return library.getBookById(bookId);
-    }
-
-    public Book getBookByName(String bookName) {
-        return library.getBookByName(bookName);
     }
 
     public void returnBook(int bookId,int readerId) {
@@ -240,10 +241,10 @@ public class Manager {
     }
 
     public SearchResult search(
-            Optional<String> namePart,
-            Optional<Integer> minYear,
-            Optional<Integer> maxYear,
-            Optional<Boolean> isAvailable,
+            String namePart,
+            Integer minYear,
+            Integer maxYear,
+            Boolean isAvailable,
             int page,
             int pageSize) {
 
@@ -252,15 +253,14 @@ public class Manager {
         }
 
         if (minYear != null && maxYear != null
-                && minYear.isPresent() && maxYear.isPresent()
-                && minYear.get() > maxYear.get()) {
+                && minYear > maxYear) {
             throw new IllegalArgumentException("Минимальный год больше максимального");
         }
 
         List<Book> resultList = new ArrayList<>(getAllBooks());
 
-        if (namePart != null && namePart.isPresent()) {
-            String name = namePart.get().trim().toLowerCase();
+        if (namePart != null) {
+            String name = namePart.trim().toLowerCase();
 
             if (!name.isEmpty()) {
                 resultList = resultList.stream()
@@ -271,20 +271,20 @@ public class Manager {
             }
         }
 
-        if (minYear != null && minYear.isPresent()) {
+        if (minYear != null) {
             resultList = resultList.stream()
-                    .filter(book -> book.getPublishYear() >= minYear.get())
+                    .filter(book -> book.getPublishYear() >= minYear)
                     .toList();
         }
 
-        if (maxYear != null && maxYear.isPresent()) {
+        if (maxYear != null ) {
             resultList = resultList.stream()
-                    .filter(book -> book.getPublishYear() <= maxYear.get())
+                    .filter(book -> book.getPublishYear() <= maxYear)
                     .toList();
         }
 
-        if (isAvailable != null && isAvailable.isPresent()) {
-            boolean available = isAvailable.get();
+        if (isAvailable != null ) {
+            boolean available = isAvailable;
 
             resultList = resultList.stream()
                     .filter(book -> book.isAvailable() == available)

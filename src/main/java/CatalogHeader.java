@@ -17,23 +17,25 @@ public class CatalogHeader {
         for (int i = 0; i < fields.length; i++) {
             String field = fields[i].trim();
 
-            if (!REQUIRED.contains(field)) {
-                throw new IllegalArgumentException(
-                        "Название колонки не соответствует заданным параметрам. - " + field + " " + i
-                );
-            }
-
-            if (result.put(field, i) != null) {
+            if (result.containsKey(field)) {
                 throw new IllegalArgumentException(
                         "Колонка " + field + " под номером " + i + " - повторяется."
                 );
             }
+
+            if (!REQUIRED.contains(field)) {
+                throw new IllegalArgumentException(
+                        "Лишняя колонка: " + field
+                );
+            }
+
+            result.put(field, i);
         }
 
         for (String field : REQUIRED) {
             if (!result.containsKey(field)) {
                 throw new IllegalArgumentException(
-                        "В заголовке отсутствует ключевое слово: " + field
+                        "Нет колонки " + field
                 );
             }
         }

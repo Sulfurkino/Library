@@ -2,6 +2,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -9,29 +10,39 @@ public class Library {
     private Map<Integer, Book> books = new HashMap<>();
     private Map<Integer, Reader> readers = new HashMap<>();
 
-    public void addBook(Book book){
-        books.put(book.getId(),book);
+    public void addBook(Book book) {
+        books.put(book.getId(), book);
     }
 
-    public void removeBook(Book book){
+    public void removeBook(Book book) {
         books.remove(book.getId());
     }
 
-    public Book getBookById(int bookId){
-       return books.get(bookId);
+    public Optional<Book> getBookById(int bookId) {
+        return Optional.ofNullable(books.get(bookId));
     }
 
-    public Book getBookByName(String bookName){
-        for (Map.Entry<Integer,Book> books : books.entrySet()){
-            if (Objects.equals(books.getValue().getBookName(), bookName)) {
-                return books.getValue();
-            }
-        }
-        return null;
+    public Optional<Book> findBookById(int bookId) {
+        return Optional.ofNullable(books.get(bookId));
     }
+
+    public Optional<Book> findBookByName(String bookName) {
+        if (bookName == null) {
+            return Optional.empty();
+        }
+
+        String normalizedName = bookName.trim();
+
+        return books.values().stream()
+                .filter(book -> book.getBookName() != null)
+                .filter(book -> book.getBookName().trim().equalsIgnoreCase(normalizedName))
+                .sorted(Comparator.comparingInt(Book::getId))
+                .findFirst();
+    }
+
     //защита от null
     public void returnBook(int bookId, int readerId) {
-        Book book = getBookById(bookId);
+        Book book = getBookById(bookId).orElse(null);
         Reader reader = getReaderById(readerId);
 
         if (book == null || book.isAvailable() || reader == null) {
@@ -45,9 +56,10 @@ public class Library {
         reader.getBooks().remove(book);
         book.setAvailable(true);
     }
+
     //защита от null
     public void borrowBook(int bookId, int readerId) {
-        Book book = getBookById(bookId);
+        Book book = getBookById(bookId).orElse(null);
         Reader reader = getReaderById(readerId);
 
         if (book == null || !book.isAvailable() || reader == null) {
@@ -64,14 +76,16 @@ public class Library {
         }
     }
 
+    private List<Book> booksById() {
+        return books.values().stream()
+                .sorted(Comparator.comparingInt(Book::getId))
+                .toList();
+    }
+
     public List<Book> getAvailableBooks() {
-        List<Book> result = new ArrayList<>();
-        for (Book book : books.values()) {
-            if (book.isAvailable()) {
-                result.add(book);
-            }
-        }
-        return result;
+        return booksById().stream()
+                .filter(Book::isAvailable)
+                .toList();
     }
 
     public Reader getReaderById(int readerId) {
@@ -79,33 +93,21 @@ public class Library {
     }
 
     public List<Book> getBorrowedBooks() {
-        List<Book> result = new ArrayList<>();
-        for (Book book : books.values()) {
-            if (!book.isAvailable()) {
-                result.add(book);
-            }
-        }
-        return result;
+        return booksById().stream()
+                .filter(book -> !book.isAvailable())
+                .toList();
     }
 
     public List<Integer> getBorrowedBooksId() {
-        List<Integer> result = new ArrayList<>();
-        for (Book book : books.values()) {
-            if (!book.isAvailable()) {
-                result.add(book.getId());
-            }
-        }
-        return result;
+        return getBorrowedBooks().stream()
+                .map(Book::getId)
+                .toList();
     }
 
     public List<Integer> getAvailableBooksId() {
-        List<Integer> result = new ArrayList<>();
-        for (Book book : books.values()) {
-            if (book.isAvailable()) {
-                result.add(book.getId());
-            }
-        }
-        return result;
+        return getAvailableBooks().stream()
+                .map(Book::getId)
+                .toList();
     }
 
     public Map<Integer, BookReadersStats> getBookReadersStats() {
@@ -123,7 +125,7 @@ public class Library {
     }
 
     public List<Book> getAllBooks() {
-        return new ArrayList<>(books.values());
+        return booksById();
     }
 
     public List<Reader> getAllReaders() {

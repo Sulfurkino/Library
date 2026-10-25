@@ -16,16 +16,19 @@ public class CatalogFile {
 
         try (BufferedReader bufferedReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             String line = bufferedReader.readLine();
-            if (line == null){
+            if (line == null) {
                 throw new IllegalArgumentException("Первая строка пуста.");
             }
+
             Map<String, Integer> columns = CatalogHeader.columns(line);
             int lineNumber = 1;
+
             while ((line = bufferedReader.readLine()) != null) {
                 lineNumber++;
                 if (line.isBlank()) {
                     continue;
                 }
+
                 String[] fields = line.split(";", -1);
 
                 if (fields.length != columns.size()) {
@@ -33,62 +36,62 @@ public class CatalogFile {
                     continue;
                 }
 
-                String idField = fields[columns.get("id")].trim();
-                String nameField = fields[columns.get("name")].trim();
-                String yearField = fields[columns.get("year")].trim();
-                String availableField = fields[columns.get("available")].trim();
+                String idText = fields[columns.get("id")].trim();
+                String nameText = fields[columns.get("name")].trim();
+                String yearText = fields[columns.get("year")].trim();
+                String availableText = fields[columns.get("available")].trim();
 
                 // id
                 int bookId;
                 try {
-                    bookId = Integer.parseInt(idField);
+                    bookId = Integer.parseInt(idText);
                 } catch (NumberFormatException e) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
                     continue;
                 }
 
-                if (bookId < 0){
+                if (bookId < 0) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_ID));
                     continue;
                 }
 
                 // name
-                if (nameField.isBlank()) {
+                if (nameText.isBlank()) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.EMPTY_NAME));
                     continue;
                 }
 
                 // year
+                int year;
                 try {
-                    Integer.parseInt(yearField);
+                    year = Integer.parseInt(yearText);
                 } catch (NumberFormatException e) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_YEAR));
                     continue;
                 }
 
                 // available
-                boolean isBoolean = "true".equalsIgnoreCase(availableField)
-                        || "false".equalsIgnoreCase(availableField);
-                if (!isBoolean){
+                boolean isBoolean = "true".equalsIgnoreCase(availableText)
+                        || "false".equalsIgnoreCase(availableText);
+                if (!isBoolean) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.BAD_AVAILABLE));
                     continue;
                 }
 
-                if (library.getBooks().containsKey(bookId)){
+                if (library.getBooks().containsKey(bookId)) {
                     errors.add(new ImportError(lineNumber, ImportError.Reason.DUPLICATE_ID));
                     continue;
                 }
 
                 // добавление
-                library.addBook(new Book(nameField, bookId, Integer.parseInt(yearField)));
-                library.getBooks().get(bookId).setAvailable(Boolean.parseBoolean(availableField));
+                library.addBook(new Book(nameText, bookId, year));
+                library.getBooks().get(bookId).setAvailable(Boolean.parseBoolean(availableText));
                 importedIds.add(bookId);
             }
-
         }
+
         return new ImportResult(importedIds, errors);
     }
-
     public static void writeReport(Path path, List<LibraryProblem> problems) throws IOException {
         List<LibraryProblem> problemsCopy = problems.stream()
                 .sorted(ReportOrder.byBookAndType())
