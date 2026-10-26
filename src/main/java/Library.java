@@ -2,7 +2,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -18,8 +17,8 @@ public class Library {
         books.remove(book.getId());
     }
 
-    public Optional<Book> getBookById(int bookId) {
-        return Optional.ofNullable(books.get(bookId));
+    public Book getBookById(int bookId) {
+        return books.get(bookId);
     }
 
     public Optional<Book> findBookById(int bookId) {
@@ -42,7 +41,7 @@ public class Library {
 
     //защита от null
     public void returnBook(int bookId, int readerId) {
-        Book book = getBookById(bookId).orElse(null);
+        Book book = getBookById(bookId);
         Reader reader = getReaderById(readerId);
 
         if (book == null || book.isAvailable() || reader == null) {
@@ -59,7 +58,7 @@ public class Library {
 
     //защита от null
     public void borrowBook(int bookId, int readerId) {
-        Book book = getBookById(bookId).orElse(null);
+        Book book = getBookById(bookId);
         Reader reader = getReaderById(readerId);
 
         if (book == null || !book.isAvailable() || reader == null) {

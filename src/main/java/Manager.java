@@ -30,8 +30,8 @@ public class Manager {
         library.removeBook(bookToRemove);
     }
 
-    public Optional<Book> getBookById(int bookId) {
-        return library.getBookById(bookId);
+    public Optional<Book> findBookByName(String bookName) {
+        return library.findBookByName(bookName);
     }
 
     public void returnBook(int bookId,int readerId) {
@@ -194,49 +194,16 @@ public class Manager {
     public List<LibraryProblem> validateLibrary() {
         List<LibraryProblem> result = new ArrayList<>();
 
-        List<Integer> availableBooks = getAvailableBooksId();
         //id книги встречается несколько раз
         // у читателя есть книга, отсутствующая в каталоге
-
         result.addAll(new TwoRulesTask().findProblems(library));
 
         //книга находится у читателя, но помечена доступной
-        Set<Integer> booksInLists = getAllReaders().stream()
-                .flatMap(reader -> reader.getBooks().stream())
-                .map(Book :: getId)
-                .filter(availableBooks::contains)
-                .collect(Collectors.toSet());
-        if (!booksInLists.isEmpty()) {
-            for (Integer bookId : booksInLists) {
-                List<Integer> readerIds = getAllReaders().stream()
-                        .filter(reader -> reader.getBooks().stream()
-                                .anyMatch(book -> book.getId() == bookId))
-                        .map(Reader::getId)
-                        .toList();
-
-                result.add(new LibraryProblem(
-                        ProblemType.AVAILABLE_BUT_BORROWED,
-                        bookId,
-                        readerIds
-                ));
-            }
-        }
-
         //книга недоступна, но ни у одного читателя ее нет
-        Set<Integer> unavailableBooks = getBorrowedBooksId().stream()
-                .filter(id -> getAllReaders().stream()
-                        .flatMap(reader -> reader.getBooks().stream())
-                        .noneMatch(book -> book.getId() == id))
-                .collect(Collectors.toSet());
-        if (!unavailableBooks.isEmpty()) {
-            for (Integer bookId : unavailableBooks) {
-                result.add(new LibraryProblem(
-                        ProblemType.UNAVAILABLE_NOT_BORROWED,
-                        bookId,
-                        List.of()
-                ));
-            }
-        }
+        result.addAll(StatusRules.find(getAllBooks(), getAllReaders()));
+
+        result.sort(ReportOrder.byBookAndType());
+
         return result;
     }
 
