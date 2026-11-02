@@ -1,3 +1,8 @@
+import model.*;
+import service.Manager;
+import service.ProblemSummary;
+import service.TwoRulesTask;
+
 import java.util.*;
 
 public class Main {
@@ -98,7 +103,7 @@ public class Main {
 //        // 1. Сортировка и страницы
 //        // ============================================================
 //
-//        SearchResult page0 = manager.search(
+//        model.SearchResult page0 = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 2
 //        );
@@ -106,7 +111,7 @@ public class Main {
 //        checkIds(page0, List.of(30, 20), "page 0");
 //        check(page0.getTotal() == 4, "page 0 total");
 //
-//        SearchResult page1 = manager.search(
+//        model.SearchResult page1 = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                1, 2
 //        );
@@ -114,7 +119,7 @@ public class Main {
 //        checkIds(page1, List.of(40, 10), "page 1");
 //        check(page1.getTotal() == 4, "page 1 total");
 //
-//        SearchResult page2 = manager.search(
+//        model.SearchResult page2 = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                2, 2
 //        );
@@ -129,7 +134,7 @@ public class Main {
 //        // 2. Каждый фильтр отдельно
 //        // ============================================================
 //
-//        SearchResult byName = manager.search(
+//        model.SearchResult byName = manager.search(
 //                Optional.of("Alpha"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -138,7 +143,7 @@ public class Main {
 //        checkIds(byName, List.of(20, 40), "name filter");
 //
 //
-//        SearchResult byMinYear = manager.search(
+//        model.SearchResult byMinYear = manager.search(
 //                Optional.empty(),
 //                Optional.of(2021),
 //                Optional.empty(),
@@ -149,7 +154,7 @@ public class Main {
 //        checkIds(byMinYear, List.of(30), "minYear filter");
 //
 //
-//        SearchResult byMaxYear = manager.search(
+//        model.SearchResult byMaxYear = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.of(2020),
@@ -161,7 +166,7 @@ public class Main {
 //
 //
 //        // Все книги доступны.
-//        SearchResult available = manager.search(
+//        model.SearchResult available = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                Optional.of(true),
 //                0, 10
@@ -176,7 +181,7 @@ public class Main {
 //        // 3. Настоящий null у каждого фильтра + другой активный
 //        // ============================================================
 //
-//        SearchResult nameNull = manager.search(
+//        model.SearchResult nameNull = manager.search(
 //                null,
 //                Optional.of(2021),
 //                Optional.empty(),
@@ -187,7 +192,7 @@ public class Main {
 //        checkIds(nameNull, List.of(30), "name null + active min");
 //
 //
-//        SearchResult minNull = manager.search(
+//        model.SearchResult minNull = manager.search(
 //                Optional.empty(),
 //                null,
 //                Optional.of(2020),
@@ -198,7 +203,7 @@ public class Main {
 //        checkIds(minNull, List.of(20, 40, 10), "minYear null + active max");
 //
 //
-//        SearchResult maxNull = manager.search(
+//        model.SearchResult maxNull = manager.search(
 //                Optional.empty(),
 //                Optional.of(2021),
 //                null,
@@ -209,7 +214,7 @@ public class Main {
 //        checkIds(maxNull, List.of(30), "maxYear null + active min");
 //
 //
-//        SearchResult availabilityNull = manager.search(
+//        model.SearchResult availabilityNull = manager.search(
 //                Optional.of("Alpha"),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -221,7 +226,7 @@ public class Main {
 //
 //
 //        // Все четыре null одновременно.
-//        SearchResult allNull = manager.search(
+//        model.SearchResult allNull = manager.search(
 //                null, null, null, null,
 //                0, 10
 //        );
@@ -236,7 +241,7 @@ public class Main {
 //        // 4. Optional.empty() отдельно
 //        // ============================================================
 //
-//        SearchResult allEmpty = manager.search(
+//        model.SearchResult allEmpty = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
 //        );
@@ -250,13 +255,13 @@ public class Main {
 //        // 5. Название: trim + case + empty + blank
 //        // ============================================================
 //
-//        SearchResult alphaWithSpaces = manager.search(
+//        model.SearchResult alphaWithSpaces = manager.search(
 //                Optional.of(" Alpha "),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
 //        );
 //
-//        SearchResult alphaNormal = manager.search(
+//        model.SearchResult alphaNormal = manager.search(
 //                Optional.of("alpha"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -269,7 +274,7 @@ public class Main {
 //        );
 //
 //
-//        SearchResult emptyName = manager.search(
+//        model.SearchResult emptyName = manager.search(
 //                Optional.of(""),
 //                Optional.of(2020),
 //                Optional.empty(),
@@ -284,7 +289,7 @@ public class Main {
 //        );
 //
 //
-//        SearchResult blankName = manager.search(
+//        model.SearchResult blankName = manager.search(
 //                Optional.of("   "),
 //                Optional.of(2020),
 //                Optional.empty(),
@@ -305,7 +310,7 @@ public class Main {
 //        // 6. Несколько / одно / ноль совпадений
 //        // ============================================================
 //
-//        SearchResult several = manager.search(
+//        model.SearchResult several = manager.search(
 //                Optional.of("a"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -314,7 +319,7 @@ public class Main {
 //        check(several.getTotal() == 3, "several matches");
 //
 //
-//        SearchResult one = manager.search(
+//        model.SearchResult one = manager.search(
 //                Optional.of("zulu"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -324,7 +329,7 @@ public class Main {
 //        check(one.getTotal() == 1, "one match total");
 //
 //
-//        SearchResult none = manager.search(
+//        model.SearchResult none = manager.search(
 //                Optional.of("does-not-exist"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -362,7 +367,7 @@ public class Main {
 //
 //        List<Integer> catalogIds = library.getAllBooks()
 //                .stream()
-//                .map(Book::getId)
+//                .map(model.Book::getId)
 //                .sorted()
 //                .toList();
 //
@@ -388,16 +393,16 @@ public class Main {
 //    }
 //
 //
-//    private static List<Integer> ids(SearchResult result) {
+//    private static List<Integer> ids(model.SearchResult result) {
 //        return result.getBooks()
 //                .stream()
-//                .map(BookView::getId)
+//                .map(model.BookView::getId)
 //                .toList();
 //    }
 //
 //
 //    private static void checkIds(
-//            SearchResult actual,
+//            model.SearchResult actual,
 //            List<Integer> expected,
 //            String testName) {
 //
@@ -435,20 +440,20 @@ public class Main {
 //
 //    public static void main(String[] args) {
 //
-//        Library library = new Library();
-//        Manager manager = new Manager(library);
+//        model.Library library = new model.Library();
+//        service.Manager manager = new service.Manager(library);
 //
 //        // =========================
 //        // КНИГИ
 //        // =========================
 //
-//        Book book1 = new Book("Java", 1, 2020);
-//        Book book2 = new Book("Java", 2, 2020);
-//        Book book3 = new Book("Spring", 3, 2022);
-//        Book book4 = new Book("Spring Boot", 4, 2024);
-//        Book book5 = new Book("Algorithms", 5, 2019);
-//        Book book6 = new Book("Clean Code", 6, 2008);
-//        Book book7 = new Book("Docker", 7, 2023);
+//        model.Book book1 = new model.Book("Java", 1, 2020);
+//        model.Book book2 = new model.Book("Java", 2, 2020);
+//        model.Book book3 = new model.Book("Spring", 3, 2022);
+//        model.Book book4 = new model.Book("Spring Boot", 4, 2024);
+//        model.Book book5 = new model.Book("Algorithms", 5, 2019);
+//        model.Book book6 = new model.Book("Clean Code", 6, 2008);
+//        model.Book book7 = new model.Book("Docker", 7, 2023);
 //
 //        library.addBooks(List.of(
 //                book1,
@@ -464,13 +469,13 @@ public class Main {
 //        // ЧИТАТЕЛИ
 //        // =========================
 //
-//        Reader reader1 = new Reader(
+//        model.Reader reader1 = new model.Reader(
 //                new ArrayList<>(),
 //                1,
 //                "Иван"
 //        );
 //
-//        Reader reader2 = new Reader(
+//        model.Reader reader2 = new model.Reader(
 //                new ArrayList<>(),
 //                2,
 //                "Анна"
@@ -486,7 +491,7 @@ public class Main {
 //
 //        System.out.println("=== 1. Выдача книг ===");
 //
-//        OperationResult giveResult =
+//        model.OperationResult giveResult =
 //                manager.giveSeveralBooks(1, List.of(1, 3));
 //
 //        System.out.println(giveResult);
@@ -507,7 +512,7 @@ public class Main {
 //
 //        System.out.println("\n=== 3. Поиск по названию ===");
 //
-//        SearchResult nameResult = manager.search(
+//        model.SearchResult nameResult = manager.search(
 //                Optional.of("  JAVA  "),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -525,7 +530,7 @@ public class Main {
 //
 //        System.out.println("\n=== 4. Поиск по годам ===");
 //
-//        SearchResult yearResult = manager.search(
+//        model.SearchResult yearResult = manager.search(
 //                Optional.empty(),
 //                Optional.of(2020),
 //                Optional.of(2023),
@@ -543,7 +548,7 @@ public class Main {
 //
 //        System.out.println("\n=== 5. Недоступные книги ===");
 //
-//        SearchResult unavailableResult = manager.search(
+//        model.SearchResult unavailableResult = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -561,7 +566,7 @@ public class Main {
 //
 //        System.out.println("\n=== 6. Пагинация ===");
 //
-//        SearchResult page0 = manager.search(
+//        model.SearchResult page0 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -570,7 +575,7 @@ public class Main {
 //                3
 //        );
 //
-//        SearchResult page1 = manager.search(
+//        model.SearchResult page1 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -579,7 +584,7 @@ public class Main {
 //                3
 //        );
 //
-//        SearchResult page2 = manager.search(
+//        model.SearchResult page2 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -588,7 +593,7 @@ public class Main {
 //                3
 //        );
 //
-//        SearchResult page3 = manager.search(
+//        model.SearchResult page3 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -670,8 +675,8 @@ public class Main {
 //
 //        // Нарушение №3:
 //        // у читателя есть книга, которой нет в каталоге
-//        Book ghostBook = new Book(
-//                "Ghost Book",
+//        model.Book ghostBook = new model.Book(
+//                "Ghost model.Book",
 //                999,
 //                2025
 //        );
@@ -680,12 +685,12 @@ public class Main {
 //
 //
 //        // Запускаем проверку
-//        List<LibraryProblem> problems =
+//        List<model.LibraryProblem> problems =
 //                manager.validateLibrary();
 //
 //        System.out.println("Найдено проблем: " + problems.size());
 //
-//        for (LibraryProblem problem : problems) {
+//        for (model.LibraryProblem problem : problems) {
 //            System.out.println(problem);
 //        }
 //    }
