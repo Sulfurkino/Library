@@ -1,6 +1,7 @@
 package service;
 
 import model.LibraryProblem;
+import model.ProblemType;
 
 import java.util.EnumMap;
 import java.util.List;

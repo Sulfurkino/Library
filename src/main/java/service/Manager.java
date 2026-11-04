@@ -1,9 +1,7 @@
 package service;
 
-import model.Book;
-import model.BookView;
-import model.BorrowedBookStat;
-import model.Reader;
+import dto.SearchResult;
+import model.*;
 
 import java.util.*;
 

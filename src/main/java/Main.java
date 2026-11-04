@@ -103,7 +103,7 @@ public class Main {
 //        // 1. Сортировка и страницы
 //        // ============================================================
 //
-//        model.SearchResult page0 = manager.search(
+//        dto.SearchResult page0 = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 2
 //        );
@@ -111,7 +111,7 @@ public class Main {
 //        checkIds(page0, List.of(30, 20), "page 0");
 //        check(page0.getTotal() == 4, "page 0 total");
 //
-//        model.SearchResult page1 = manager.search(
+//        dto.SearchResult page1 = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                1, 2
 //        );
@@ -119,7 +119,7 @@ public class Main {
 //        checkIds(page1, List.of(40, 10), "page 1");
 //        check(page1.getTotal() == 4, "page 1 total");
 //
-//        model.SearchResult page2 = manager.search(
+//        dto.SearchResult page2 = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                2, 2
 //        );
@@ -134,7 +134,7 @@ public class Main {
 //        // 2. Каждый фильтр отдельно
 //        // ============================================================
 //
-//        model.SearchResult byName = manager.search(
+//        dto.SearchResult byName = manager.search(
 //                Optional.of("Alpha"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -143,7 +143,7 @@ public class Main {
 //        checkIds(byName, List.of(20, 40), "name filter");
 //
 //
-//        model.SearchResult byMinYear = manager.search(
+//        dto.SearchResult byMinYear = manager.search(
 //                Optional.empty(),
 //                Optional.of(2021),
 //                Optional.empty(),
@@ -154,7 +154,7 @@ public class Main {
 //        checkIds(byMinYear, List.of(30), "minYear filter");
 //
 //
-//        model.SearchResult byMaxYear = manager.search(
+//        dto.SearchResult byMaxYear = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.of(2020),
@@ -166,7 +166,7 @@ public class Main {
 //
 //
 //        // Все книги доступны.
-//        model.SearchResult available = manager.search(
+//        dto.SearchResult available = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                Optional.of(true),
 //                0, 10
@@ -181,7 +181,7 @@ public class Main {
 //        // 3. Настоящий null у каждого фильтра + другой активный
 //        // ============================================================
 //
-//        model.SearchResult nameNull = manager.search(
+//        dto.SearchResult nameNull = manager.search(
 //                null,
 //                Optional.of(2021),
 //                Optional.empty(),
@@ -192,7 +192,7 @@ public class Main {
 //        checkIds(nameNull, List.of(30), "name null + active min");
 //
 //
-//        model.SearchResult minNull = manager.search(
+//        dto.SearchResult minNull = manager.search(
 //                Optional.empty(),
 //                null,
 //                Optional.of(2020),
@@ -203,7 +203,7 @@ public class Main {
 //        checkIds(minNull, List.of(20, 40, 10), "minYear null + active max");
 //
 //
-//        model.SearchResult maxNull = manager.search(
+//        dto.SearchResult maxNull = manager.search(
 //                Optional.empty(),
 //                Optional.of(2021),
 //                null,
@@ -214,7 +214,7 @@ public class Main {
 //        checkIds(maxNull, List.of(30), "maxYear null + active min");
 //
 //
-//        model.SearchResult availabilityNull = manager.search(
+//        dto.SearchResult availabilityNull = manager.search(
 //                Optional.of("Alpha"),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -226,7 +226,7 @@ public class Main {
 //
 //
 //        // Все четыре null одновременно.
-//        model.SearchResult allNull = manager.search(
+//        dto.SearchResult allNull = manager.search(
 //                null, null, null, null,
 //                0, 10
 //        );
@@ -241,7 +241,7 @@ public class Main {
 //        // 4. Optional.empty() отдельно
 //        // ============================================================
 //
-//        model.SearchResult allEmpty = manager.search(
+//        dto.SearchResult allEmpty = manager.search(
 //                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
 //        );
@@ -255,13 +255,13 @@ public class Main {
 //        // 5. Название: trim + case + empty + blank
 //        // ============================================================
 //
-//        model.SearchResult alphaWithSpaces = manager.search(
+//        dto.SearchResult alphaWithSpaces = manager.search(
 //                Optional.of(" Alpha "),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
 //        );
 //
-//        model.SearchResult alphaNormal = manager.search(
+//        dto.SearchResult alphaNormal = manager.search(
 //                Optional.of("alpha"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -274,7 +274,7 @@ public class Main {
 //        );
 //
 //
-//        model.SearchResult emptyName = manager.search(
+//        dto.SearchResult emptyName = manager.search(
 //                Optional.of(""),
 //                Optional.of(2020),
 //                Optional.empty(),
@@ -289,7 +289,7 @@ public class Main {
 //        );
 //
 //
-//        model.SearchResult blankName = manager.search(
+//        dto.SearchResult blankName = manager.search(
 //                Optional.of("   "),
 //                Optional.of(2020),
 //                Optional.empty(),
@@ -310,7 +310,7 @@ public class Main {
 //        // 6. Несколько / одно / ноль совпадений
 //        // ============================================================
 //
-//        model.SearchResult several = manager.search(
+//        dto.SearchResult several = manager.search(
 //                Optional.of("a"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -319,7 +319,7 @@ public class Main {
 //        check(several.getTotal() == 3, "several matches");
 //
 //
-//        model.SearchResult one = manager.search(
+//        dto.SearchResult one = manager.search(
 //                Optional.of("zulu"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -329,7 +329,7 @@ public class Main {
 //        check(one.getTotal() == 1, "one match total");
 //
 //
-//        model.SearchResult none = manager.search(
+//        dto.SearchResult none = manager.search(
 //                Optional.of("does-not-exist"),
 //                Optional.empty(), Optional.empty(), Optional.empty(),
 //                0, 10
@@ -393,7 +393,7 @@ public class Main {
 //    }
 //
 //
-//    private static List<Integer> ids(model.SearchResult result) {
+//    private static List<Integer> ids(dto.SearchResult result) {
 //        return result.getBooks()
 //                .stream()
 //                .map(model.BookView::getId)
@@ -402,7 +402,7 @@ public class Main {
 //
 //
 //    private static void checkIds(
-//            model.SearchResult actual,
+//            dto.SearchResult actual,
 //            List<Integer> expected,
 //            String testName) {
 //
@@ -512,7 +512,7 @@ public class Main {
 //
 //        System.out.println("\n=== 3. Поиск по названию ===");
 //
-//        model.SearchResult nameResult = manager.search(
+//        dto.SearchResult nameResult = manager.search(
 //                Optional.of("  JAVA  "),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -530,7 +530,7 @@ public class Main {
 //
 //        System.out.println("\n=== 4. Поиск по годам ===");
 //
-//        model.SearchResult yearResult = manager.search(
+//        dto.SearchResult yearResult = manager.search(
 //                Optional.empty(),
 //                Optional.of(2020),
 //                Optional.of(2023),
@@ -548,7 +548,7 @@ public class Main {
 //
 //        System.out.println("\n=== 5. Недоступные книги ===");
 //
-//        model.SearchResult unavailableResult = manager.search(
+//        dto.SearchResult unavailableResult = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -566,7 +566,7 @@ public class Main {
 //
 //        System.out.println("\n=== 6. Пагинация ===");
 //
-//        model.SearchResult page0 = manager.search(
+//        dto.SearchResult page0 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -575,7 +575,7 @@ public class Main {
 //                3
 //        );
 //
-//        model.SearchResult page1 = manager.search(
+//        dto.SearchResult page1 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -584,7 +584,7 @@ public class Main {
 //                3
 //        );
 //
-//        model.SearchResult page2 = manager.search(
+//        dto.SearchResult page2 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),
@@ -593,7 +593,7 @@ public class Main {
 //                3
 //        );
 //
-//        model.SearchResult page3 = manager.search(
+//        dto.SearchResult page3 = manager.search(
 //                Optional.empty(),
 //                Optional.empty(),
 //                Optional.empty(),

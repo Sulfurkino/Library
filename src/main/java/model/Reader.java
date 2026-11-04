@@ -8,7 +8,7 @@ import java.util.List;
 @Setter
 @Getter
 public class Reader {
-    private int id;
+    private Integer id;
     private String name;
     private List<Book> books;
 

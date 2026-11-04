@@ -7,7 +7,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 
-/** Проверки service.CatalogFile на временных файлах. Запусти main: при расхождении программа падает. */
+/** Проверки utils.CatalogFile на временных файлах. Запусти main: при расхождении программа падает. */
 public class CatalogFileChecks {
     public static void main(String[] args) throws IOException {
         Path dir = Files.createTempDirectory("library-checks");
@@ -50,7 +50,7 @@ public class CatalogFileChecks {
         expect("заголовок", "bookId;type;title;readers", lines.get(0));
         expect("первая проблема", "40;DUPLICATE;" + ProblemType.DUPLICATE.title() + ";9", lines.get(1));
         expect("читатели через запятую", "50;MISSING_IN_CATALOG;" + ProblemType.MISSING_IN_CATALOG.title() + ";2,9", lines.get(3));
-        System.out.println("ALL service.CatalogFile CHECKS PASSED");
+        System.out.println("ALL utils.CatalogFile CHECKS PASSED");
     }
 
     private static void expect(String name, Object expected, Object actual) {
