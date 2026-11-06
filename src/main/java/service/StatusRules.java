@@ -30,39 +30,47 @@ public class StatusRules {
         //• Проблемы верни по возрастанию bookId.
         //
         //Книги сравнивай по id. model.Book, model.Reader, model.LibraryProblem, model.ProblemType и PracticeAdapter не меняй.
-        List<LibraryProblem> result = new ArrayList<>();
-//неудачная попытка -
-//        for (Book book : books){
-//            for (List<Integer> bookList : booksAndTheirReaders.values()){
-//                for (Integer bookId : bookList){
-//                    if (book.isAvailable() && book.getId() == bookId ){
-//                        result.add(new LibraryProblem(ProblemType.AVAILABLE_BUT_BORROWED,bookId,booksAndTheirReaders.get(bookId)));
-//                    }
-//                    if (!book.isAvailable() && ){
-//                        result.add(new LibraryProblem(ProblemType.UNAVAILABLE_NOT_BORROWED,bookId,booksAndTheirReaders.get(bookId)));
-//                    }
-//                }
+//        List<LibraryProblem> result = new ArrayList<>();
+//        for (Book book : books) {
+//            List<Integer> readerIds = booksAndTheirReaders.getOrDefault(
+//                    book.getId(),
+//                    List.of()
+//            );
+//            if (book.isAvailable() && !readerIds.isEmpty()){
+//                result.add(new LibraryProblem(ProblemType.AVAILABLE_BUT_BORROWED,book.getId(),booksAndTheirReaders.get(book.getId())));
 //            }
-//
+//            if (!book.isAvailable() && readerIds.isEmpty()) {
+//                result.add(new LibraryProblem(ProblemType.UNAVAILABLE_NOT_BORROWED,book.getId(),booksAndTheirReaders.get(book.getId())));
+//            }
 //        }
-        for (Book book : books) {
-            //если книга есть в Map, получаем список читателей.
-            //Если книги нет в Map, получаем пустой список.
-            List<Integer> readerIds = booksAndTheirReaders.getOrDefault(
-                    book.getId(),
-                    List.of()
-            );
+//        return result.stream()
+//                .sorted(Comparator.comparing(LibraryProblem::bookId))
+//                .toList();
 
-            if (book.isAvailable()){
-                result.add(new LibraryProblem(ProblemType.AVAILABLE_BUT_BORROWED,book.getId(),booksAndTheirReaders.get(book.getId())));
-            }
+        return books.stream()
+                .map(book -> Map.entry(
+                        book,
+                        booksAndTheirReaders.getOrDefault(book.getId(), List.of())
+                ))
+                .filter(entry -> {
+                    Book book = entry.getKey();
+                    List<Integer> readerIds = entry.getValue();
 
-            if (readerIds.isEmpty()) {
-                result.add(new LibraryProblem(ProblemType.UNAVAILABLE_NOT_BORROWED,book.getId(),booksAndTheirReaders.get(book.getId())));
-            }
-        }
-        return result.stream()
-                .sorted(Comparator.comparing(LibraryProblem::bookId))
+                    return (book.isAvailable() && !readerIds.isEmpty())
+                            || (!book.isAvailable() && readerIds.isEmpty());
+                })
+                .map(entry -> {
+                    Book book = entry.getKey();
+                    List<Integer> readerIds = entry.getValue();
+
+                    ProblemType type = book.isAvailable()
+                            ? ProblemType.AVAILABLE_BUT_BORROWED
+                            : ProblemType.UNAVAILABLE_NOT_BORROWED;
+
+                    return new LibraryProblem(type, book.getId(), readerIds);
+                })
+                .sorted(Comparator.comparingInt(LibraryProblem::bookId))
                 .toList();
     }
+
 }
