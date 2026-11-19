@@ -14,89 +14,26 @@ public class Main {
         Book book50 = new Book("Zulu50", 50, 2022);
         Book book60 = new Book("Zulu60", 60, 2022);
 
-        Reader reader20 = new Reader(new ArrayList<>(),2,"02");
-        Reader reader09 = new Reader(new ArrayList<>(),9,"09");
+        Reader reader20 = new Reader(2,"02");
+        Reader reader09 = new Reader(9,"09");
 
         library.setReaders(Map.of(
                 2, reader20,
                 9, reader09
         ));
 
-        //HW проверка дз -
-        TwoRulesTask twoRulesTask = new TwoRulesTask();
-        library.setReaders(Map.of(
-                2, reader20,
-                9, reader09
-        ));
+        library.addBook(new Book("Анна Каренина- перезагрузка", 7, 2020));
+        library.borrowBook(7,2);
+        library.returnBook(7,2);
 
-        reader09.getBooks().add(book50);
-        reader09.getBooks().add(book50);
-        reader09.getBooks().add(book40);
-        reader09.getBooks().add(book40);
+        library.borrowBook(7,9);
 
-        reader20.getBooks().add(book50);
-        reader20.getBooks().add(book50);
-        reader20.getBooks().add(book60);
+        System.out.println(reader09.getHistory());
+        System.out.println(reader20.getHistory());
 
-        for (LibraryProblem libraryProblem : twoRulesTask.findProblems(library)){
-            System.out.println(libraryProblem);
-        }
 
-        //проверка problemSummary
-        List<LibraryProblem> problems = twoRulesTask.findProblems(library);
 
-        Map<ProblemType, Integer> expected = new EnumMap<>(ProblemType.class);
-        expected.put(ProblemType.DUPLICATE, 2);
-        expected.put(ProblemType.MISSING_IN_CATALOG, 3);
-        expected.put(ProblemType.AVAILABLE_BUT_BORROWED, 0);
-        expected.put(ProblemType.UNAVAILABLE_NOT_BORROWED, 0);
 
-        Map<ProblemType, Integer> actual = ProblemSummary.countByType(problems);
-
-        if (!expected.equals(actual)) {
-            throw new AssertionError(
-                    "Тест провалился."
-                            + "Ожидалось-" + expected + "\n"
-                            + "Получено-" + actual
-            );
-        }
-
-        System.out.println("Тест пройден");
-        System.out.println("Результат-" + actual);
-
-        //HomeWork3
-        Library hw3 = new Library();
-        Book hw3Book40 = new Book("Сорок", 40, 2000);
-        hw3Book40.setAvailable(false);
-        hw3.addBook(hw3Book40);
-        Book hw3Book50 = new Book("Пятьдесят", 50, 2000);
-        Reader hw3Reader2 = new Reader(
-                new ArrayList<>(List.of(hw3Book50)), 2, "Второй");
-        Reader hw3Reader9 = new Reader(new ArrayList<>(
-                List.of(hw3Book40, hw3Book40, hw3Book50)),
-                9, "Девятый");
-        hw3.setReaders(Map.of(2, hw3Reader2, 9, hw3Reader9));
-
-        List<LibraryProblem> expectedProblems = List.of(
-                new LibraryProblem(ProblemType.DUPLICATE, 40, List.of(9)),
-                new LibraryProblem(ProblemType.DUPLICATE, 50, List.of(2, 9)),
-                new LibraryProblem(ProblemType.MISSING_IN_CATALOG, 50, List.of(2, 9))
-        );
-
-        List<LibraryProblem> actualProblems = new Manager(hw3).validateLibrary();
-
-        if (!expectedProblems.equals(actualProblems)) {
-            throw new AssertionError(
-                    "Ошибка. Ожидали - " + expectedProblems + "\n"
-                    + "Получили- " + actualProblems
-            );
-        }
-
-        System.out.println("Успех");
-        System.out.println("Результат-");
-        for (LibraryProblem libraryProblem : actualProblems) {
-            System.out.println(libraryProblem);
-        }
 
 
 //        // ============================================================

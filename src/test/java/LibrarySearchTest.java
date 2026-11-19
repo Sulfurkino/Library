@@ -23,9 +23,7 @@ class LibrarySearchTest {
 
         var actual = library.findBookByName("Spring");
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(Optional.empty(),actual);
     }
 
     @Test
@@ -36,9 +34,7 @@ class LibrarySearchTest {
         var actual = library.findBookByName(" jaVA ")
                 .map(Book::getId);
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(Optional.of(7), actual);
     }
 
     @Test
@@ -51,9 +47,7 @@ class LibrarySearchTest {
         var actual = library.findBookByName("Java")
                 .map(Book::getId);
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(Optional.of(7), actual);
     }
 
     @Test
@@ -64,8 +58,6 @@ class LibrarySearchTest {
         var actual = library.findBookById(7)
                 .map(Book::getId);
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(Optional.of(7), actual);
     }
 }

@@ -58,7 +58,6 @@ public class Library {
         book.setAvailable(true);
     }
 
-    //защита от null
     public void borrowBook(int bookId, int readerId) {
         Book book = getBookById(bookId);
         Reader reader = getReaderById(readerId);
@@ -68,6 +67,8 @@ public class Library {
         }
 
         reader.getBooks().add(book);
+        reader.getHistory().add(book.getId());
+
         book.setAvailable(false);
     }
 

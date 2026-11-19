@@ -1,8 +1,6 @@
 import model.*;
 import org.junit.jupiter.api.Test;
 import service.Manager;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +12,6 @@ class ManagerValidationTest {
         Library library = libraryWithAllProblems();
         Manager manager = new Manager(library);
 
-        // TODO: составь ожидаемые проблемы.
         List<LibraryProblem> expected = List.of(
                 new LibraryProblem(
                         ProblemType.AVAILABLE_BUT_BORROWED,
@@ -23,7 +20,7 @@ class ManagerValidationTest {
                 new LibraryProblem(
                         ProblemType.UNAVAILABLE_NOT_BORROWED,
                         12,
-                        List.of(9)
+                        List.of()
                 ),
                 new LibraryProblem(
                         ProblemType.DUPLICATE,
@@ -57,9 +54,7 @@ class ManagerValidationTest {
 
         var actual = manager.validateLibrary();
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(List.of(), actual);
     }
 
     @Test
@@ -68,15 +63,14 @@ class ManagerValidationTest {
         book(library, "Доступна", 7, true);
         Book borrowed = book(library, "Выдана", 12, false);
         Reader reader = new Reader(
-                new ArrayList<>(List.of(borrowed)), 2, "Два");
+                2, "Два");
+        reader.getBooks().add(borrowed);
         library.setReaders(Map.of(2, reader));
         Manager manager = new Manager(library);
 
         var actual = manager.validateLibrary();
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(List.of(), actual);
     }
 
     // Данные уже подготовлены. Перечисли проблемы сам.
@@ -91,11 +85,14 @@ class ManagerValidationTest {
         // Другие объекты тех же книг: сравниваем по id.
         Book copy7 = new Book("Война и мир", 7, 1869);
         Book copy33 = new Book("Чистый код", 33, 2008);
-        Reader reader2 = new Reader(new ArrayList<>(
-                List.of(copy7, copy33, missing)), 2, "Два");
-        Reader reader9 = new Reader(new ArrayList<>(
-                List.of(copy33, book40, book40)), 9, "Девять");
+        Reader reader2 = new Reader(2, "Два");
+        reader2.getBooks().addAll(List.of(copy7, copy33, missing));
+
+        Reader reader9 = new Reader(9, "Девять");
+        reader9.getBooks().addAll(List.of(copy33, book40, book40));
+
         library.setReaders(Map.of(9, reader9, 2, reader2));
+
         return library;
     }
 

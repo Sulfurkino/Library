@@ -2,8 +2,10 @@ package service;
 
 import dto.SearchResult;
 import model.*;
+import utils.StatusRules;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Manager {
     private Library library;
@@ -204,7 +206,7 @@ public class Manager {
 
         //книга находится у читателя, но помечена доступной
         //книга недоступна, но ни у одного читателя ее нет
-//        result.addAll(service.StatusRules.find(getAllBooks(), getAllReaders()));
+        result.addAll(StatusRules.find(getAllBooks(), getAllReaders()));
 
         result.sort(ReportOrder.byBookAndType());
 
@@ -291,5 +293,18 @@ public class Manager {
                 .toList();
 
         return new SearchResult(books, total);
+    }
+    public Map<Integer, List<Integer>> getBookReadersHistory(){
+        return getAllReaders().stream()
+                .flatMap(reader ->
+                        reader.getHistory().stream()
+                                .distinct()
+                                .map(bookId -> Map.entry(bookId,reader.getId()))
+                )
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(
+                                Map.Entry::getValue,
+                                Collectors.toList()
+                        )));
     }
 }

@@ -3,6 +3,8 @@ import model.Library;
 import org.junit.jupiter.api.Test;
 import service.Manager;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ManagerSearchTest {
@@ -16,9 +18,7 @@ class ManagerSearchTest {
         var actual = manager.findBookByName(" jaVA ")
                 .map(Book::getId);
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(Optional.of(7), actual);
     }
 
     @Test
@@ -27,8 +27,6 @@ class ManagerSearchTest {
 
         var actual = manager.findBookByName("Spring");
 
-        // TODO: сравни ожидаемое с actual.
-        throw new AssertionError(
-                "TODO: допиши assertEquals");
+        assertEquals(Optional.empty(), actual);
     }
 }
