@@ -1,5 +1,8 @@
 package checks;
 
+import model.*;
+import utils.CatalogFile;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,6 +14,8 @@ import java.util.List;
 public class CatalogFileChecks {
     public static void main(String[] args) throws IOException {
         Path dir = Files.createTempDirectory("library-checks");
+
+
 
         // 1. Хорошие строки принимаются, плохая попадает в ошибки с номером строки.
         Path catalog = dir.resolve("catalog.csv");

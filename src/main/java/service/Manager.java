@@ -27,11 +27,6 @@ public class Manager {
         library.addBook(newBook);
     }
 
-    public Optional<Book> getBookByName(String bookName) {
-        return library.findBookByName(bookName);
-    }
-
-
     public void removeBook(Book bookToRemove) {
         library.removeBook(bookToRemove);
     }

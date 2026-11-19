@@ -1,5 +1,8 @@
 package checks;
 
+import model.*;
+import service.Manager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +33,12 @@ public class LibraryChecks6 {
         expect("пустая библиотека", Optional.empty(), new Library().findBookById(1));
 
         // 3. Весь validateLibrary: service.TwoRulesTask и две средние ветки, по книге и типу.
-        Reader reader2 = new Reader(new ArrayList<>(List.of(book7, book33, book55)), 2, "Второй");
-        Reader reader9 = new Reader(new ArrayList<>(List.of(book33, book40, book40)), 9, "Девятый");
+        Reader reader2 = new Reader(2, "Второй");
+        reader2.getBooks().addAll(List.of(book7, book33, book55));
+
+        Reader reader9 = new Reader(9, "Девятый");
+        reader9.getBooks().addAll(List.of(book33, book40, book40));
+
         library.setReaders(Map.of(2, reader2, 9, reader9));
         List<LibraryProblem> expected = List.of(
                 new LibraryProblem(ProblemType.AVAILABLE_BUT_BORROWED, 7, List.of(2)),

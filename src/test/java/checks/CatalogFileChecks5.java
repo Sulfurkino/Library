@@ -1,5 +1,8 @@
 package checks;
 
+import model.*;
+import utils.CatalogFile;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
