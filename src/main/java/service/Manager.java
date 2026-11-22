@@ -4,8 +4,10 @@ import dto.SearchResult;
 import model.*;
 import utils.StatusRules;
 
+import javax.xml.catalog.Catalog;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Manager {
     private Library library;
@@ -301,5 +303,18 @@ public class Manager {
                                 Map.Entry::getValue,
                                 Collectors.toList()
                         )));
+    }
+    //названия книг
+
+    public List<String> getReaderHistoryBooks(Integer readerId) {
+        if (library.getReaderById(readerId) == null){
+            return List.of();
+        }
+
+        return library.getReaderById(readerId).getHistory().stream()
+                .map(library::findBookById)
+                .flatMap(Optional::stream)
+                .map(Book::getBookName)
+                .toList();
     }
 }
