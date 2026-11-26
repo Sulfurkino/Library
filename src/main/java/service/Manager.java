@@ -4,10 +4,9 @@ import dto.SearchResult;
 import model.*;
 import utils.StatusRules;
 
-import javax.xml.catalog.Catalog;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Manager {
     private Library library;
@@ -315,6 +314,14 @@ public class Manager {
                 .map(library::findBookById)
                 .flatMap(Optional::stream)
                 .map(Book::getBookName)
+                .toList();
+    }
+
+    public List<Integer> getOverdueBookIds(LocalDate today) {
+        return library.getBooks().values().stream()
+                .filter(book -> book.getReturnDeadline() != null)
+                .filter(book -> today.isAfter(book.getReturnDeadline()))
+                .map(Book::getId)
                 .toList();
     }
 }

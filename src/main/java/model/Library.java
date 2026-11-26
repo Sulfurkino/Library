@@ -3,6 +3,7 @@ package model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Setter
@@ -55,10 +56,11 @@ public class Library {
         }
 
         reader.getBooks().remove(book);
+        book.setReturnDeadline(null);
         book.setAvailable(true);
     }
 
-    public void borrowBook(int bookId, int readerId) {
+    public void borrowBook(int bookId, int readerId, LocalDate returnDate){
         Book book = getBookById(bookId);
         Reader reader = getReaderById(readerId);
 
@@ -69,7 +71,13 @@ public class Library {
         reader.getBooks().add(book);
         reader.getHistory().add(book.getId());
 
+        book.setReturnDeadline(returnDate.plusDays(14));
+
         book.setAvailable(false);
+    }
+
+    public void borrowBook(int bookId, int readerId) {
+        borrowBook(bookId,readerId,LocalDate.now());
     }
 
     public void addBooks(List<Book> books) {
